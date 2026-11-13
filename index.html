@@ -359,13 +359,13 @@ footer.site{text-align:center;color:var(--muted);font-size:12.5px;padding:10px 2
     <div class="card">
       <div class="card-head"><div class="step">1</div><div><h2>Maklumat Pemohon</h2><p>Permohonan dibuat oleh MGP berdaftar di bawah JPNK sahaja</p></div></div>
       <div class="card-body grid g2">
-        <div class="field span2"><label>Nama Pemohon / Syarikat <span class="req">*</span></label><input class="input" name="nama" required placeholder="Seperti dalam MyKad / Pendaftaran Syarikat"></div>
-        <div class="field"><label>No. K.P.P.N (MyKad) <span class="req">*</span></label><input class="input" name="kppn" required placeholder="cth. 850101-03-5123" data-ic></div>
-        <div class="field"><label>No. MGP <span class="req">*</span></label><input class="input" name="mgp" required placeholder="cth. MGP/KTN/0123"></div>
-        <div class="field"><label>Nama Persatuan / Kelab / Syarikat</label><input class="input" name="persatuan" placeholder="Pilihan"></div>
-        <div class="field"><label>No. Telefon <span class="req">*</span></label><input class="input" name="telefon" required placeholder="cth. 012-3456789" inputmode="tel"></div>
-        <div class="field span2"><label>Alamat <span class="req">*</span></label><textarea class="input" name="alamat" required rows="2"></textarea></div>
-        <div class="field"><label>Emel</label><input class="input" type="email" name="emel" placeholder="nama@contoh.com"></div>
+        <div class="field span2"><label>Nama Pemohon / Syarikat <span class="req">*</span></label><input class="input" name="nama" autocomplete="section-pemohon name" required placeholder="Seperti dalam MyKad / Pendaftaran Syarikat"></div>
+        <div class="field"><label>No. K.P.P.N (MyKad) <span class="req">*</span></label><input class="input" name="kppn" autocomplete="off" required placeholder="cth. 850101-03-5123" data-ic></div>
+        <div class="field"><label>No. MGP <span class="req">*</span></label><input class="input" name="mgp" autocomplete="off" required placeholder="cth. MGP/KTN/0123"></div>
+        <div class="field"><label>Nama Persatuan / Kelab / Syarikat</label><input class="input" name="persatuan" autocomplete="section-pemohon organization" placeholder="Pilihan"></div>
+        <div class="field"><label>No. Telefon <span class="req">*</span></label><input class="input" name="telefon" autocomplete="section-pemohon tel" required placeholder="cth. 012-3456789" inputmode="tel"></div>
+        <div class="field span2"><label>Alamat <span class="req">*</span></label><textarea class="input" name="alamat" autocomplete="section-pemohon street-address" required rows="2"></textarea></div>
+        <div class="field"><label>Emel</label><input class="input" type="email" name="emel" autocomplete="section-pemohon email" placeholder="nama@contoh.com"></div>
       </div>
     </div>
 
@@ -533,7 +533,7 @@ const mgpCols = [['nama','Nama penuh'],['ic','No. MyKad'],['tel','No. Telefon'],
 const pesCols = [['nama','Nama penuh'],['ic','MyKad / Passport'],['alamat','Alamat'],['tel','No. Telefon'],['waris','Tel. Waris']];
 function addRow(tbl, cols, extra){
   const tb = $('tbody', tbl), tr = document.createElement('tr');
-  tr.innerHTML = `<td class="bil"></td>` + cols.map(([k,p])=>`<td><input class="input" data-k="${k}" placeholder="${p}"></td>`).join('')
+  tr.innerHTML = `<td class="bil"></td>` + cols.map(([k,p])=>`<td><input class="input" data-k="${k}" placeholder="${p}" autocomplete="off"></td>`).join('')
     + (extra ? `<td><select class="input" data-k="jantina"><option>Lelaki</option><option>Wanita</option></select></td>
        <td><select class="input" data-k="wn"><option>Warganegara</option><option>Bukan Warganegara</option></select></td>` : '')
     + `<td class="act"><button type="button" class="icon-btn" title="Buang baris"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></td>`;
@@ -774,8 +774,7 @@ function statusCard(a){
         <div class="pra"><span class="pra-no" id="pra-${esc(a.ref)}">${esc(o.rujukanPra || '—')}</span>
           ${o.rujukanPra ? `<button type="button" class="btn btn-ghost btn-sm" data-copy="${esc(o.rujukanPra)}">⧉ Salin</button>` : ''}</div>
         ${fee ? `<div class="pay-sub">Jumlah bayaran: <b>RM ${esc(fee)}</b></div>` : ''}
-        <a class="btn btn-gold" href="${SERAMBI_URL}" target="_blank" rel="noopener" style="text-decoration:none;margin-top:12px">Bayar di Serambi Pay ↗</a>
-        <div class="pay-sub" style="margin-top:8px">Untuk pembayaran sila layari: <a href="${SERAMBI_URL}" target="_blank" rel="noopener">${SERAMBI_URL}</a></div>
+        <a class="btn btn-danger" href="${SERAMBI_URL}" target="_blank" rel="noopener" style="text-decoration:none;margin-top:12px">Bayar di Serambi Pay ↗</a>
         ${o.arahan ? `<div class="arahan">${esc(o.arahan)}</div>` : ''}
         <div class="pay-sub" style="margin-top:10px">Selepas membuat bayaran, sila hantar salinan resit di bawah. Terima kasih.</div></div>
       <form class="pay-form" data-pay="${esc(a.ref)}" novalidate>
