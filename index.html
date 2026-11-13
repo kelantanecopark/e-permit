@@ -780,7 +780,7 @@ function statusCard(a){
       <form class="pay-form" data-pay="${esc(a.ref)}" novalidate>
         <h4>Hantar Pengesahan Bayaran</h4>
         <div class="grid g2">
-          <div class="field"><label>No. Resit / Rujukan Transaksi <span class="req">*</span></label><input class="input" name="resit" required></div>
+          <div class="field"><label>No. Resit Bayaran <span class="req">*</span></label><input class="input" name="resit" required autocomplete="off" placeholder="No. resit daripada Serambi Pay"><div class="hint">Bukan No. Rujukan permohonan (EP-…).</div></div>
           <div class="field"><label>Tarikh Bayaran <span class="req">*</span></label><input class="input" type="date" name="tarikh" required max="${today()}"></div>
           <div class="field"><label>Jumlah Dibayar (RM) <span class="req">*</span></label><input class="input" type="number" min="0" step="0.01" name="jumlah" required value="${esc(fee)}"></div>
           <div class="field"><label>Kaedah Bayaran</label><select class="input" name="kaedah">${KAEDAH_BAYAR.map(k=>`<option>${k}</option>`).join('')}</select></div>
@@ -819,6 +819,7 @@ async function submitPay(e){
   let bad = null;
   $$('[required]', f).forEach(i=>{ const ok = i.type==='file' ? i.files.length : i.value.trim(); i.classList.toggle('invalid', !ok); if(!ok && !bad) bad = i; });
   if(bad){ bad.focus(); return toast('Sila lengkapkan maklumat bayaran'); }
+  if(/^EP-\d{4}-/i.test(f.resit.value.trim()) || f.resit.value.trim().toUpperCase() === ref.toUpperCase()){ f.resit.classList.add('invalid'); f.resit.focus(); return toast('No. Resit tidak boleh sama dengan No. Rujukan permohonan. Masukkan No. resit bayaran.'); }
   const payment = {resit:f.resit.value.trim(), tarikh:f.tarikh.value, jumlah:(+f.jumlah.value).toFixed(2), kaedah:f.kaedah.value, catatan:f.catatan.value.trim()};
   btn.disabled = true; const label = btn.textContent; btn.textContent = 'Menghantar…';
   try{
