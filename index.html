@@ -240,6 +240,43 @@ dl.kv dd{margin:0;padding:7px 0;border-bottom:1px dashed #e5ebe7;font-weight:500
 
 footer.site{text-align:center;color:var(--muted);font-size:12.5px;padding:10px 24px 40px}
 
+/* ---------- TELEFON (≤640px): ruang, saiz sentuhan & jadual sebagai kad ---------- */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+@media(max-width:640px){
+  main{padding:0 12px;margin:14px auto 40px}
+  .card{border-radius:14px;margin-bottom:14px}
+  .card-head{padding:14px 16px;gap:10px}.card-body{padding:16px}
+  .grid{gap:12px}
+  /* 16px mengelak iPhone membesarkan skrin apabila medan disentuh */
+  .input,select.input,textarea.input,table.data td .input,.toolbar .input{font-size:16px}
+  .input,select.input{min-height:44px}
+  .toolbar .input{min-width:0;flex:1 1 100%}
+  .nav button{padding:10px 14px}
+  .btn{min-height:44px;justify-content:center}
+  .submit-bar{padding:14px 16px}.submit-bar .btn{flex:1 1 100%}
+  .pay-form .actions .btn,.success .btn{width:100%}
+  .st-card{padding:14px}
+  .steps{margin:16px -6px 10px;grid-template-columns:repeat(5,minmax(0,1fr))}.steps li{padding:32px 2px 0;font-size:10.5px;overflow-wrap:anywhere}
+  .pra-no{font-size:20px}.refbox{font-size:18px;padding:10px 16px;word-break:break-all}
+  .toast{left:12px;right:12px;bottom:max(16px,env(safe-area-inset-bottom));transform:translateY(140px);justify-content:center}
+  .toast.show{transform:none}
+  .drawer-head{padding:14px 16px}.drawer-body{padding:16px}.drawer-foot{padding:12px 16px}
+  /* Lampiran A (MGP & peserta): setiap baris menjadi kad, tiada skrol ke tepi */
+  .tbl-wrap:has(#tblMgp),.tbl-wrap:has(#tblPes){overflow:visible;border:0}
+  #tblMgp,#tblPes{min-width:0!important}
+  #tblMgp thead,#tblPes thead{display:none}
+  #tblMgp tbody,#tblPes tbody{display:grid;gap:10px}
+  #tblMgp tr,#tblPes tr{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 12px 12px;border:1px solid var(--line);border-radius:12px;background:#fbfcfb}
+  #tblMgp td,#tblPes td{display:block;padding:0;border:0;width:auto!important}
+  #tblMgp td.bil,#tblPes td.bil{grid-column:1/-1;text-align:left;font-size:12.5px;color:var(--forest);padding:6px 44px 0 0}
+  #tblMgp td.bil::before{content:"MGP "}#tblPes td.bil::before{content:"Peserta "}
+  #tblMgp td:nth-child(2),#tblMgp td:nth-child(5),#tblPes td:nth-child(2),#tblPes td:nth-child(3),#tblPes td:nth-child(4){grid-column:1/-1}
+  #tblMgp td.act,#tblPes td.act{position:absolute;top:4px;right:4px}
+  .icon-btn{width:40px;height:40px}
+  .tbl-foot .btn{flex:1 1 auto}
+}
+
 /* ================= PRINT (Borang 6 + Lampiran A) ================= */
 #printArea{display:none}
 @page{size:A4 portrait;margin:14mm 16mm}
