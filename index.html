@@ -167,6 +167,7 @@ table.data td.act{width:44px;text-align:center}
 .btn-gold{background:var(--gold);color:#2b2208}.btn-gold:hover{filter:brightness(1.05)}
 .btn-ghost{background:#fff;border-color:#cfdad3;color:var(--forest)}.btn-ghost:hover{background:var(--mint)}
 .btn-danger{background:var(--red);color:#fff}
+.btn-white{background:#fff;border-color:#d4d4d4;color:#1f1f1f}.btn-white:hover{background:#f5f5f5}
 .btn-sm{padding:7px 12px;font-size:13px;border-radius:8px}
 .btn-lg{padding:14px 26px;font-size:15.5px}
 
@@ -765,8 +766,8 @@ function statusCard(a){
   else if (s === 'Ditolak') body = `<div class="st-box bad"><b>Harap maaf, permohonan anda tidak diluluskan.</b>${o.ulasan?`<br>Ulasan: ${esc(o.ulasan)}`:''}</div>`;
   else if (s === 'Bayaran') body = `<div class="st-box warn"><b>Pengesahan bayaran anda telah diterima</b>${pm.dihantar?` pada ${new Date(pm.dihantar).toLocaleString('ms-MY')}`:''}
       (No. Resit ${esc(pm.resit)}, RM${esc(pm.jumlah)}).<br>Bayaran sedang disahkan. Permit akan dikeluarkan selepas bayaran disahkan oleh pegawai.</div>`;
-  else if (s === 'Dikeluarkan') body = `<div class="st-box ok"><b>Bayaran telah disahkan dan permit telah dikeluarkan.</b><br>Permit Masuk No.: <b>${esc(o.permitNo)}</b>
-      <div style="margin-top:12px"><button class="btn btn-gold" data-print="${esc(a.ref)}">🖨 Cetak Permit</button></div></div>`;
+  else if (s === 'Dikeluarkan') body = `<div class="st-box ok"><b>Bayaran telah disahkan.</b><br>Permit Masuk No.: <b>${esc(o.permitNo)}</b>
+      <div style="margin-top:12px"><button class="btn btn-white" data-print="${esc(a.ref)}">🖨 Cetak Permit</button></div></div>`;
   else {   // Lulus / BayaranTidakSah: arahan bayaran + borang pengesahan bayaran
     body = (s === 'BayaranTidakSah' ? `<div class="st-box bad" style="margin-bottom:10px"><b>Bayaran tidak dapat disahkan.</b>${o.ulasan?`<br>Ulasan: ${esc(o.ulasan)}`:''}<br>Sila semak dan hantar semula pengesahan bayaran.</div>` : '') +
       `<div class="st-box ok"><b>Assalamualaikum dan salam sejahtera,</b><br>
