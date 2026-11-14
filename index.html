@@ -796,7 +796,7 @@ $('#btnSemak').onclick = doSemak;
 const STEP_LBL = ['Permohonan dihantar','Semakan','Kelulusan','Bayaran/Pengesahan','Permit dikeluarkan'];
 const STEP_STATE = {Baru:['done','now','','',''], Lulus:['done','done','done','now',''], Bayaran:['done','done','done','now',''],
   BayaranTidakSah:['done','done','done','fail',''], Dikeluarkan:['done','done','done','done','done'], Ditolak:['done','done','fail','','']};
-const KAEDAH_BAYAR = ['Serambi Pay','Tunai di kaunter','Pindahan bank / FPX','Cek','Wang pos'];
+const KAEDAH_BAYAR = ['Serambi Pay','Tunai','FPX / Dalam talian'];   // selaras dengan Tetapan Sistem Pengurusan Permit
 function statusCard(a){
   const s = normSt(a.status), o = a.office || {}, pm = a.payment || {}, fee = o.fee ? Number(o.fee).toFixed(2) : '';
   const steps = `<ol class="steps">${STEP_LBL.map((l,i)=>`<li class="${STEP_STATE[s][i]}">${l}</li>`).join('')}</ol>`;
