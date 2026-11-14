@@ -412,8 +412,8 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
       <div class="card-head"><div class="step">1</div><div><h2>MAKLUMAT PEMOHON</h2><p>Permohonan dibuat oleh MGP berdaftar di bawah JPNK sahaja</p></div></div>
       <div class="card-body grid g2">
         <div class="field span2"><label>Nama Pemohon / Syarikat <span class="req">*</span></label><input class="input" name="nama" autocomplete="section-pemohon name" required placeholder="Seperti dalam MyKad / Pendaftaran Syarikat"></div>
-        <div class="field"><label>No. K.P.P.N (MyKad) <span class="req">*</span></label><input class="input" name="kppn" autocomplete="off" required placeholder="cth. 850101-03-5123" data-ic></div>
-        <div class="field"><label>No. MGP <span class="req">*</span></label><input class="input" name="mgp" autocomplete="off" required placeholder="cth. MGP/KTN/0123"></div>
+        <div class="field"><label>No. K.P.P.N (MyKad) <span class="req">*</span></label><input class="input" name="kppn" autocomplete="off" required placeholder="cth. 850101-03-5123" data-ic inputmode="numeric" maxlength="14"></div>
+        <div class="field"><label>No. MGP <span class="req">*</span></label><input class="input" name="mgp" autocomplete="off" required placeholder="cth. MGP-0123"></div>
         <div class="field"><label>Nama Persatuan / Kelab / Syarikat</label><input class="input" name="persatuan" autocomplete="section-pemohon organization" placeholder="Pilihan"></div>
         <div class="field"><label for="telNo">No. Telefon <span class="req">*</span></label>
           <div class="tel-group">
@@ -601,7 +601,11 @@ const CC_OPTS = NEGARA.map(([iso,n,d],i)=>`${i===10?'<option disabled>───�
 const negaraOf = iso => NEGARA.find(x => x[0] === iso) || NEGARA[0];
 function ccShow(sel){ const [iso,,d] = negaraOf(sel.value), cc = sel.closest('.tel-cc'); $('.iso',cc).textContent = iso; $('.dial',cc).textContent = '+' + d; }
 // Nilai disimpan: Malaysia kekal format tempatan (cth. 012-3456789); negara lain "+kod nombor" (tanpa 0 di hadapan).
-function telJoin(iso, raw){ raw = (raw || '').trim(); if (!raw || raw.startsWith('+') || iso === 'MY') return raw; return `+${negaraOf(iso)[2]} ${raw.replace(/^0+/, '')}`; }
+function telJoin(iso, raw){
+  raw = (raw || '').trim(); if (!raw || raw.startsWith('+')) return raw;
+  if (iso === 'MY'){ const n = raw.replace(/\D/g,''); return /^[1-9]/.test(n) && !(n.startsWith('60') && n.length >= 10) ? '0' + raw : raw; }   // 199778990 -> 0199778990
+  return `+${negaraOf(iso)[2]} ${raw.replace(/^0+/, '')}`;
+}
 // Format antarabangsa penuh tanpa ruang, cth. 019-9558995 (MY) -> +60199558995 ; 8123 4567 (SG) -> +6581234567
 function telIntl(iso, raw){
   raw = (raw || '').trim(); const n = raw.replace(/\D/g, ''), d = negaraOf(iso)[2];
@@ -611,8 +615,9 @@ function telIntl(iso, raw){
 }
 function telOk(iso, raw){
   const n = (raw || '').replace(/\D/g,'');
-  return iso === 'MY' && !(raw || '').trim().startsWith('+') ? (n.length >= 9 && n.length <= 11 && n[0] === '0' || n.startsWith('60') && n.length >= 10 && n.length <= 13)
-                                                             : (n.length >= 6 && n.length <= 15);
+  return iso === 'MY' && !(raw || '').trim().startsWith('+')
+    ? (n.length >= 9 && n.length <= 11 && n[0] === '0' || n.startsWith('60') && n.length >= 10 && n.length <= 13 || /^[1-9]/.test(n) && n.length >= 8 && n.length <= 10)   // 019…, 6019…, atau 19… (tanpa 0)
+    : (n.length >= 6 && n.length <= 15);
 }
 
 function addRow(tbl, cols, extra){
@@ -629,6 +634,8 @@ function addRow(tbl, cols, extra){
     }
     tr.remove(); renumber();
   };
+  if (tbl.id === 'tblMgp'){ const ic = $('[data-k="ic"]', tr); ic.inputMode = 'numeric'; ic.maxLength = 14;   // MyKad MGP: format automatik
+    ic.addEventListener('input', () => { const v = fmtIC(ic.value); if (v !== ic.value) ic.value = v; }); }
   tr.addEventListener('input', recount); tr.addEventListener('change', recount);
   tb.appendChild(tr); renumber();
   return tr;
@@ -752,6 +759,19 @@ function tempoh(){
 form.dari.min = today(); form.dari.onchange = ()=>{ form.hingga.min = form.dari.value; tempoh(); }; form.hingga.onchange = tempoh;
 form.addEventListener('input', e=>e.target.classList?.remove('invalid'));
 form.addEventListener('reset', ()=>setTimeout(()=>{ resetRows(); tempoh(); $$('.invalid',form).forEach(i=>i.classList.remove('invalid')); }));
+
+/* ---------- NO. MYKAD: FORMAT AUTOMATIK 831026-03-5793 ---------- */
+const fmtIC = v => { const d = String(v || '').replace(/\D/g, '').slice(0, 12);
+  return d.length > 8 ? `${d.slice(0,6)}-${d.slice(6,8)}-${d.slice(8)}` : d.length > 6 ? `${d.slice(0,6)}-${d.slice(6)}` : d; };
+form.kppn.addEventListener('input', () => {
+  const el = form.kppn, before = el.value, pos = el.selectionStart ?? before.length;
+  const digitsBefore = before.slice(0, pos).replace(/\D/g, '').length;   // kekalkan kedudukan kursor
+  const out = fmtIC(before); if (out === before) return;
+  el.value = out;
+  let p = 0, n = 0; while (p < out.length && n < digitsBefore){ if (/\d/.test(out[p])) n++; p++; }
+  try { el.setSelectionRange(p, p); } catch (_) {}
+  if ($('#mgpSama').checked) syncMgpSama();
+});
 
 /* ---------- NO. TELEFON PEMOHON: KOD NEGARA ---------- */
 const telCC = $('#telCC');
