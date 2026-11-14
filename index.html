@@ -971,7 +971,7 @@ function statusCard(a){
   else {   // Lulus / BayaranTidakSah: arahan bayaran + borang pengesahan bayaran
     body = (s === 'BayaranTidakSah' ? `<div class="st-box bad" style="margin-bottom:10px"><b>Bayaran tidak dapat disahkan.</b>${o.ulasan?`<br>Ulasan: ${esc(o.ulasan)}`:''}<br>Sila semak dan hantar semula pengesahan bayaran.</div>` : '') +
       `<div class="st-box ok"><b>Assalamualaikum dan salam sejahtera,</b><br>
-        Untuk makluman tuan/puan, permohonan tuan/puan telah <b>diluluskan</b>. Sila buat pembayaran dengan kadar segera. Bayaran secara tunai boleh dibuat di Kaunter Hasil, Jabatan Perhutanan Negeri Kelantan.
+        Untuk makluman tuan/puan, permohonan tuan/puan telah <b>diluluskan</b>. Sila buat pembayaran dengan kadar segera. Bayaran boleh dibuat melalui atas talian Serambi Pay (masukkan no. pra pembayaran berikut) atau bayaran secara tunai boleh dibuat di Kaunter Hasil, Jabatan Perhutanan Negeri Kelantan.
         <div class="pra"><span class="pra-no" id="pra-${esc(a.ref)}">${esc(o.rujukanPra || '—')}</span>
           ${o.rujukanPra ? `<button type="button" class="btn btn-ghost btn-sm" data-copy="${esc(o.rujukanPra)}">⧉ Salin</button>` : ''}</div>
         ${fee ? `<div class="pay-sub">Jumlah bayaran: <b>RM ${esc(fee)}</b></div>` : ''}
