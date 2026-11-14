@@ -478,9 +478,8 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
   <div class="card" id="successCard" style="display:none"><div class="success">
     <div class="ring"><svg width="38" height="38" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
     <h2 style="margin:0">Permohonan Berjaya Dihantar</h2>
-    <p style="color:var(--muted);margin:6px 0 0">Simpan nombor rujukan ini untuk menyemak status permohonan anda.</p>
     <div class="refbox" id="refOut"></div>
-    <p id="successNote" style="color:var(--muted);margin:10px auto 0;font-size:13px;max-width:520px">Sila simpan No. Rujukan ini</p>
+    <p id="successNote" style="color:var(--muted);margin:10px auto 0;font-size:13px;max-width:520px">Sila simpan No. Rujukan ini untuk semakan status.</p>
     <div style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
       <button class="btn btn-gold" id="dlSalinan">🖨 Cetak Salinan</button>
       <button class="btn btn-primary" id="newApp">Permohonan Baharu</button>
@@ -503,7 +502,7 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 </section>
 
 </main>
-<footer class="site">© 2026 Jabatan Perhutanan Negeri Kelantan · <span id="footMode">Data disimpan secara setempat dalam pelayar ini.</span></footer>
+<footer class="site">© 2026 Jabatan Perhutanan Negeri Kelantan · <span id="footMode" style="color:#b42318;font-weight:700">⚠ Borang ini TIDAK disambungkan ke pelayan — permohonan tidak boleh dihantar.</span></footer>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -749,7 +748,10 @@ form.onsubmit = async e => {
     }catch(err){ toast('Gagal menghantar: ' + (err.message || err)); return; }
     finally{ btn.disabled = false; btn.textContent = label; }
     cache.set(app.ref, app);
-  } else { data.push(app); save(data); }
+  } else {   // tiada sambungan pelayan: jangan simpan secara setempat & jangan paparkan "berjaya"
+    alert('Borang ini tidak disambungkan ke pelayan e-Permit.\n\nPermohonan anda TIDAK dihantar. Sila hubungi Jabatan Perhutanan Negeri Kelantan untuk pautan borang yang betul.');
+    return;
+  }
   lastApp = app;
   $('#refOut').textContent = app.ref;
   form.style.display='none'; $('#successCard').style.display='';
@@ -759,7 +761,7 @@ $('#newApp').onclick = ()=>{ form.reset(); form.style.display=''; $('#successCar
 let lastApp = null;
 $('#dlSalinan').onclick = ()=>{ if(lastApp) printSalinan(lastApp); };
 if (ONLINE){
-  $('#footMode').textContent = 'Hak cipta Unit Ekopark dan Hutan Taman Negeri.';
+  $('#footMode').textContent = 'Hak cipta Unit Ekopark dan Hutan Taman Negeri.'; $('#footMode').removeAttribute('style');
 }
 
 /* ---------- SEMAK STATUS ---------- */
