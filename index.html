@@ -602,6 +602,13 @@ const negaraOf = iso => NEGARA.find(x => x[0] === iso) || NEGARA[0];
 function ccShow(sel){ const [iso,,d] = negaraOf(sel.value), cc = sel.closest('.tel-cc'); $('.iso',cc).textContent = iso; $('.dial',cc).textContent = '+' + d; }
 // Nilai disimpan: Malaysia kekal format tempatan (cth. 012-3456789); negara lain "+kod nombor" (tanpa 0 di hadapan).
 function telJoin(iso, raw){ raw = (raw || '').trim(); if (!raw || raw.startsWith('+') || iso === 'MY') return raw; return `+${negaraOf(iso)[2]} ${raw.replace(/^0+/, '')}`; }
+// Format antarabangsa penuh tanpa ruang, cth. 019-9558995 (MY) -> +60199558995 ; 8123 4567 (SG) -> +6581234567
+function telIntl(iso, raw){
+  raw = (raw || '').trim(); const n = raw.replace(/\D/g, ''), d = negaraOf(iso)[2];
+  if (!n) return '';
+  if (raw.startsWith('+') || n.startsWith(d) && n.length > d.length + 6) return '+' + n;   // sudah ada kod negara
+  return '+' + d + n.replace(/^0+/, '');
+}
 function telOk(iso, raw){
   const n = (raw || '').replace(/\D/g,'');
   return iso === 'MY' && !(raw || '').trim().startsWith('+') ? (n.length >= 9 && n.length <= 11 && n[0] === '0' || n.startsWith('60') && n.length >= 10 && n.length <= 13)
@@ -679,7 +686,7 @@ function syncMgpSama(clear){
   Object.entries(SAMA_MAP).forEach(([k,n])=>{
     const i = $(`[data-k="${k}"]`, tr);
     const v = $(`#appForm [name="${n}"]`).value.trim();
-    if (on) i.value = k === 'tel' ? telJoin($('#telCC').value || 'MY', v) : v;   // telefon MGP = telefon pemohon (dengan kod negara jika luar Malaysia)
+    if (on) i.value = k === 'tel' ? telIntl($('#telCC').value || 'MY', v) : v;   // telefon MGP 1 = telefon pemohon dengan kod negara, cth. +60199558995
     else if (clear) i.value = '';
     i.readOnly = on;
   });
