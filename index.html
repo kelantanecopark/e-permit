@@ -332,7 +332,9 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 .pf .sal table.pg>tfoot td{height:12mm}
 .pf .sal h5{font-size:10pt;margin:9px 0 4px;text-transform:uppercase}
 .pf .sal .sub{font-weight:700;margin:6px 0 3px}
-.pf .sal .sl{width:34%;background:#f3f3f3}
+.pf .sal .sl{width:36%;background:#f3f3f3;white-space:nowrap}
+.pf .sal .akhir{break-inside:avoid;page-break-inside:avoid}
+.pf .sal .nota{margin:10px 0 0;font-size:8.5pt;font-style:italic;color:#444}
 .pf .sal td,.pf .sal th{padding:3px 6px;font-size:9pt}
 .pf .sal .lst th{background:#f3f3f3}
 .pf .sal .lst td,.pf .sal .lst th{font-size:8pt;padding:2px 4px;line-height:1.25}
@@ -852,7 +854,10 @@ form.onsubmit = async e => {
 };
 $('#newApp').onclick = ()=>{ form.reset(); form.style.display=''; $('#successCard').style.display='none'; };
 let lastApp = null;
-$('#dlSalinan').onclick = ()=>{ if(lastApp) printSalinan(lastApp); };
+$('#dlSalinan').onclick = ()=>{
+  if(!lastApp) return toast('Tiada permohonan untuk dicetak. Sila semak status menggunakan No. Rujukan.');
+  try { printSalinan(lastApp); } catch(e){ toast('Ralat menjana salinan: ' + (e.message || e)); }
+};
 if (ONLINE){
   $('#footMode').textContent = 'Hak cipta Unit Ekopark dan Hutan Taman Negeri.'; $('#footMode').removeAttribute('style');
 }
@@ -978,14 +983,24 @@ const dl = (obj, name) => { const a=document.createElement('a'); a.href=URL.crea
 const pack = list => ({app:'ePermitHSK', versi:1, dieksport:new Date().toISOString(), permohonan:list});
 /* ---------- PRINT: BORANG 6 + LAMPIRAN A ---------- */
 const TITLE0 = document.title;
+/* Cetak TERUS dalam sentuhan/klik pengguna. Safari iPhone/iPad menyekat window.print() yang ditangguhkan
+   (setTimeout/Promise) tanpa sebarang mesej — jadi jangan tangguhkan panggilan ini. */
+function cetak(nama){
+  document.title = nama;   // nama fail PDF
+  const pulih = () => { document.title = TITLE0; window.removeEventListener('afterprint', pulih); };
+  window.addEventListener('afterprint', pulih); setTimeout(pulih, 60000);
+  try { window.print(); }
+  catch (e) { pulih(); toast('Tidak dapat membuka cetakan: ' + (e.message || e)); }
+}
 /* Salinan borang permohonan (bukan permit) — maklumat seperti yang diisi pemohon */
 function printSalinan(a){
   const v = x => x ? esc(x) : '—';
   const row = (l, x) => `<tr><td class="sl">${l}</td><td>${v(x)}</td></tr>`;
   const hantar = a.created ? new Date(a.created).toLocaleString('ms-MY',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—';
   const st = (ST[normSt(a.status)] || {l:a.status}).l;
-  /* Halaman 1: maklumat pemohon, aktiviti & perakuan. Lampiran A diletakkan pada halaman yang sama jika muat
-     dalam satu A4 (diukur sebenar sebelum cetak); jika tidak, Lampiran A bermula pada halaman 2. */
+  /* Susunan: 1. Pemohon → 2. Aktiviti → 3. Lampiran A → 4. Perakuan (sentiasa di akhir, tidak dipecah).
+     Satu A4 jika muat (diukur sebelum cetak, dengan anggaran selamat untuk jidar Safari iPhone);
+     jika tidak: halaman 1 = Bahagian 1 & 2, halaman 2 = Lampiran A + Perakuan. */
   const head = `
     <div class="t1" style="font-size:12pt;margin-top:0">JABATAN PERHUTANAN NEGERI KELANTAN</div>
     <div class="t2" style="margin:2px 0">Unit Ekopark dan Hutan Taman Negeri</div>
@@ -997,9 +1012,12 @@ function printSalinan(a){
       ${row('No. Telefon',a.telefon)}${row('Alamat',a.alamat)}${row('Emel',a.emel)}</table>
     <h5>2. Maklumat Aktiviti</h5>
     <table class="box">${row('Jenis Aktiviti',a.aktiviti)}${row('Kategori Aktiviti',a.kategori)}${row('Hutan Simpanan Kekal',a.hsk)}${row('Lokasi / Destinasi',a.lokasi)}
-      <tr><td class="sl">Tarikh</td><td>${fmtD(a.dari)} hingga ${fmtD(a.hingga)}</td></tr>${row('Laluan Masuk Pendakian',a.laluanMasuk)}${row('Laluan Keluar Pendakian',a.laluanKeluar)}</table>
-    <h5>3. Perakuan Pemohon</h5>
-    <p style="margin:3px 0">☑ Saya mengesahkan bahawa semua maklumat dan dokumen yang dikemukakan dalam permohonan ini adalah benar. Jika saya didapati memalsukan maklumat, dokumen, atau pernyataan palsu, saya boleh didakwa di bawah Kanun Keseksaan yang memperuntukkan hukuman penjara sehingga 6 bulan atau denda sehingga RM2,000.00 atau kedua-duanya.</p>`;
+      <tr><td class="sl">Tarikh</td><td>${fmtD(a.dari)} hingga ${fmtD(a.hingga)}</td></tr>${row('Laluan Masuk Pendakian',a.laluanMasuk)}${row('Laluan Keluar Pendakian',a.laluanKeluar)}</table>`;
+  const perakuan = `<div class="akhir">
+    <h5>4. Perakuan Pemohon</h5>
+    <p style="margin:3px 0">☑ Saya mengesahkan bahawa semua maklumat dan dokumen yang dikemukakan dalam permohonan ini adalah benar. Jika saya didapati memalsukan maklumat, dokumen, atau pernyataan palsu, saya boleh didakwa di bawah Kanun Keseksaan yang memperuntukkan hukuman penjara sehingga 6 bulan atau denda sehingga RM2,000.00 atau kedua-duanya.</p>
+    <p style="margin:4px 0 0">Nama: <b>${v(a.nama)}</b> &nbsp;·&nbsp; No. K.P.P.N: <b>${v(a.kppn)}</b> &nbsp;·&nbsp; Tarikh: <b>${hantar}</b></p>
+    <div class="foot">Salinan ini dijana oleh sistem e-Permit dan bukan permit yang sah. Permit hanya sah selepas dikeluarkan oleh Pegawai Hutan Berkuasa.</div></div>`;
   const lamp = tajuk => `
     ${tajuk}
     <div class="sub">A. Malim Gunung Perhutanan (MGP)</div>
@@ -1010,24 +1028,26 @@ function printSalinan(a){
       <tbody>${a.peserta.map((m,i)=>`<tr><td class="center">${i+1}.</td><td>${v(m.nama)}</td><td class="nw">${v(m.ic)}</td><td>${v(m.alamat)}</td><td class="nw">${v(m.tel)}</td><td class="nw">${v(m.waris)}</td><td>${v(m.jantina)}</td><td>${v(m.wn === 'Bukan Warganegara' ? 'Tidak' : m.wn === 'Warganegara' ? 'Ya' : m.wn)}</td></tr>`).join('')}</tbody></table>`
       : '<p style="margin:3px 0">Tiada peserta.</p>'}`;
   const ringkas = `${a.mgpList.length} MGP + ${a.peserta.length} peserta = ${total(a)} orang`;
-  const foot = `<div class="foot">Salinan ini dijana oleh sistem e-Permit dan bukan permit yang sah. Permit hanya sah selepas dikeluarkan oleh Pegawai Hutan Berkuasa.</div>`;
   const page = (inner, wm) => `<section class="page sal"><table class="pg"><thead><tr><td></td></tr></thead><tfoot><tr><td></td></tr></tfoot><tbody><tr><td>
     ${wm ? '<div class="watermark">SALINAN</div>' : ''}${inner}</td></tr></tbody></table></section>`;
-  const satu = head + lamp(`<h5>Lampiran A — Senarai MGP &amp; Peserta (${ringkas})</h5>`) + foot;
-  // Ukur ketinggian sebenar pada lebar kandungan A4 (210mm − 2×16mm). Ruang boleh guna ≈ 297 − 14 − 12 = 271mm.
-  const ukur = document.createElement('div');
-  ukur.className = 'pf'; ukur.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden';
-  ukur.innerHTML = `<div class="sal" style="width:178mm;padding:0">${satu}</div>`;
-  document.body.appendChild(ukur);
-  const mm = ukur.firstChild.getBoundingClientRect().height / (96/25.4);
-  ukur.remove();
-  $('#printArea').innerHTML = mm <= 262
+  const satu = head + lamp(`<h5>3. Lampiran A — Senarai MGP &amp; Peserta (${ringkas})</h5>`) + perakuan;
+  /* Ukur ketinggian pada lebar SEMPIT (150mm) dan had 235mm: Safari iPhone menambah jidar & pengepala/pengaki sendiri,
+     jadi ruang sebenar lebih kecil daripada A4 penuh. Anggaran selamat ini mengelakkan kandungan terpotong. */
+  let mm = 999;   // jika pengukuran gagal: dua halaman (selamat)
+  try {
+    const ukur = document.createElement('div');
+    ukur.className = 'pf'; ukur.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden';
+    ukur.innerHTML = `<div class="sal" style="width:150mm;padding:0">${satu}</div>`;
+    document.body.appendChild(ukur);
+    mm = ukur.firstElementChild.getBoundingClientRect().height / (96/25.4);
+    ukur.remove();
+  } catch (e) {}
+  $('#printArea').innerHTML = mm <= 235
     ? page(satu, true)
-    : page(head + foot, true) + page(`
-        <div class="t1" style="font-size:11pt;margin-top:0">LAMPIRAN A — SENARAI MGP &amp; PESERTA</div>
-        <div class="t2" style="margin:2px 0 8px">No. Rujukan Permohonan: <b>${esc(a.ref)}</b> · ${ringkas}</div>` + lamp('') + foot, false);
-  document.title = 'Salinan-Permohonan-' + a.ref;   // nama fail PDF
-  setTimeout(()=>{ window.print(); setTimeout(()=>document.title=TITLE0, 1000); }, 60);
+    : page(head + `<p class="nota">Bahagian 3 (Lampiran A) dan Bahagian 4 (Perakuan Pemohon) di halaman berikutnya.</p>`, true)
+      + page(`<div class="t2" style="margin:0 0 4px">No. Rujukan Permohonan: <b>${esc(a.ref)}</b></div>`
+             + lamp(`<h5 style="margin-top:4px">3. Lampiran A — Senarai MGP &amp; Peserta (${ringkas})</h5>`) + perakuan, true);
+  cetak('Salinan-Permohonan-' + a.ref);
 }
 function printPermit(a, isAdmin, salinan){
   const o = a.office || {};
@@ -1109,8 +1129,7 @@ function printPermit(a, isAdmin, salinan){
     <div style="font-size:8pt;margin-top:6px">Jumlah: ${a.mgpList.length} MGP + ${a.peserta.length} peserta = <b>${total(a)} orang</b> · No. Rujukan Permohonan: ${a.ref}</div>
   </section>`;
   if(!approved && !isAdmin && !salinan) return toast('Permit hanya boleh dicetak selepas bayaran disahkan');
-  document.title = (salinan ? 'Salinan-Permohonan-' : 'Permit-') + a.ref;   // nama fail PDF
-  setTimeout(()=>{ window.print(); setTimeout(()=>document.title=TITLE0, 1000); }, 60);
+  cetak((salinan ? 'Salinan-Permohonan-' : 'Permit-') + a.ref);
 }
 
 })();
