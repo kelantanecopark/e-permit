@@ -328,6 +328,15 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 .pf .sal{font-size:9.5pt;page:salinan;padding:0 16mm}
 /* Halaman Lampiran A: A4 LANDSKAP (jadual peserta 8 lajur lebih lega). Chrome/Edge menyokong orientasi berbeza
    dalam satu cetakan; Safari mencetak semua halaman potret dan kandungan akan menyesuaikan lebar secara automatik. */
+/* Safari (iPhone/iPad/Mac) mengabaikan @page margin:0 & orientasi: ia menambah jidar + pengepala/pengaki sendiri
+   dan membesarkan teks ~20%. Mod .saf: buang jidar/ruang kita sendiri & padatkan supaya sama muat seperti di komputer. */
+.pf.saf .sal,.pf.saf .sal.land{padding:0;font-size:8.5pt}
+.pf.saf .sal table.pg>thead td,.pf.saf .sal table.pg>tfoot td{height:0}
+.pf.saf .sal td,.pf.saf .sal th{padding:2px 5px;font-size:8.5pt}
+.pf.saf .sal .lst td,.pf.saf .sal .lst th{font-size:7.5pt;padding:1px 3px}
+.pf.saf .sal h5{margin:6px 0 3px;font-size:9pt}
+.pf.saf .sal .t1{margin:3px 0}
+.pf.saf .sal .foot{margin-top:10px}
 @page salinanL{size:A4 landscape;margin:0}
 .pf .sal.land{page:salinanL;padding:0 14mm}
 .pf .sal.land table.pg>thead td{height:10mm}
@@ -1048,10 +1057,15 @@ function printSalinan(a){
   const satu = head + lamp(`<h5>3. Lampiran A — Senarai MGP &amp; Peserta</h5>`, 0) + perakuan;
   /* Ukur ketinggian pada lebar SEMPIT (150mm) dan had 235mm: Safari iPhone menambah jidar & pengepala/pengaki sendiri,
      jadi ruang sebenar lebih kecil daripada A4 penuh. Anggaran selamat ini mengelakkan kandungan terpotong. */
+  // Safari (iPhone/iPad/Mac): ruang sebenar ≈ 182 × 250mm selepas jidarnya, dan teks dibesarkan ~1.2× →
+  // setara ≈ 150 × 205mm dalam unit CSS. Pelayar lain (Chrome/Edge): lebar 178mm, tinggi 271mm (anggaran selamat 150 × 235).
+  const SAF = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+           || /^((?!chrome|chromium|crios|fxios|edg|android).)*safari/i.test(navigator.userAgent);
+  $('#printArea').classList.toggle('saf', SAF);
   let mm = 999;   // jika pengukuran gagal: dua halaman (selamat)
   try {
     const ukur = document.createElement('div');
-    ukur.className = 'pf'; ukur.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden';
+    ukur.className = 'pf' + (SAF ? ' saf' : ''); ukur.style.cssText = 'position:absolute;left:-9999px;top:0;visibility:hidden';
     ukur.innerHTML = `<div class="sal" style="width:150mm;padding:0">${satu}</div>`;
     document.body.appendChild(ukur);
     mm = ukur.firstElementChild.getBoundingClientRect().height / (96/25.4);
@@ -1059,7 +1073,7 @@ function printSalinan(a){
   } catch (e) {}
   // Satu halaman hanya jika Lampiran A satu kumpulan (1 MGP + ≤7 peserta) DAN semuanya muat.
   // Jika tidak: halaman 1 = Bahagian 1 & 2; kemudian satu halaman bagi setiap kumpulan; Perakuan pada halaman terakhir.
-  $('#printArea').innerHTML = kumpulan === 1 && mm <= 235
+  $('#printArea').innerHTML = kumpulan === 1 && mm <= (SAF ? 200 : 235)
     ? page(satu, true)
     : page(head + `<p class="nota">Bahagian 3 (Lampiran A) dan Bahagian 4 (Perakuan Pemohon) di halaman berikutnya.</p>`, true)
       + Array.from({length: kumpulan}, (_, g) => page(
