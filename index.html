@@ -512,7 +512,7 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
           <span><b>Saya mengesahkan bahawa semua maklumat dan dokumen yang dikemukakan dalam permohonan ini adalah benar.</b> Jika saya didapati memalsukan maklumat, dokumen, atau pernyataan palsu, saya boleh didakwa di bawah Kanun Keseksaan yang memperuntukkan hukuman penjara sehingga 6 bulan atau denda sehingga RM2,000.00 atau kedua-duanya.</span></label>
       </div>
       <div class="submit-bar">
-        <span style="color:var(--muted);font-size:13px"><span style="color:var(--red)">*</span> wajib diisi.</span>
+        <span style="color:var(--muted);font-size:13px"><span style="color:var(--red)">*</span> Sila lengkapkan ruangan ini.</span>
         <div style="display:flex;gap:10px">
           <button type="reset" class="btn btn-ghost">Padam</button>
           <button type="submit" class="btn btn-primary btn-lg">Hantar →</button>
@@ -852,7 +852,7 @@ const telValid = () => telOk(telCC.value, form.telefon.value);
 /* ---------- SUBMIT ---------- */
 form.onsubmit = async e => {
   e.preventDefault();
-  let bad = null, msg = 'Sila lengkapkan medan wajib';
+  let bad = null, msg = 'Sila lengkapkan ruangan ini.';
   $$('[required]', form).forEach(i=>{ const ok = i.value.trim(); i.classList.toggle('invalid', !ok); if(!ok && !bad) bad=i; });
   const icErr = icSemak(form.kppn.value);
   if(!bad && icErr){ form.kppn.classList.add('invalid'); bad = form.kppn; msg = 'No. K.P.P.N: ' + icErr; }
