@@ -1018,19 +1018,28 @@ function printSalinan(a){
     <p style="margin:3px 0">☑ Saya mengesahkan bahawa semua maklumat dan dokumen yang dikemukakan dalam permohonan ini adalah benar. Jika saya didapati memalsukan maklumat, dokumen, atau pernyataan palsu, saya boleh didakwa di bawah Kanun Keseksaan yang memperuntukkan hukuman penjara sehingga 6 bulan atau denda sehingga RM2,000.00 atau kedua-duanya.</p>
     <p style="margin:4px 0 0">Nama: <b>${v(a.nama)}</b> &nbsp;·&nbsp; No. K.P.P.N: <b>${v(a.kppn)}</b> &nbsp;·&nbsp; Tarikh: <b>${hantar}</b></p>
     <div class="foot">Salinan ini dijana oleh sistem e-Permit dan bukan permit yang sah. Permit hanya sah selepas dikeluarkan oleh Pegawai Hutan Berkuasa.</div></div>`;
-  const lamp = tajuk => `
+  /* Lampiran A dipecah kepada kumpulan: setiap kumpulan/halaman = 1 MGP + hingga 7 peserta (nisbah 1:7).
+     Penomboran Bil. berterusan antara halaman. */
+  const NPG = NISBAH;   // 7 peserta bagi setiap MGP
+  const kumpulan = Math.max(1, a.mgpList.length, Math.ceil(a.peserta.length / NPG));
+  const lamp = (tajuk, g) => {   // g = indeks kumpulan; undefined = semua (tidak digunakan lagi)
+    const mL = g === undefined ? a.mgpList : a.mgpList.slice(g, g + 1), m0 = g === undefined ? 0 : g;
+    const pL = g === undefined ? a.peserta : a.peserta.slice(g * NPG, g * NPG + NPG), p0 = g === undefined ? 0 : g * NPG;
+    return `
     ${tajuk}
     <div class="sub">A. Malim Gunung Perhutanan (MGP)</div>
-    <table class="box lst"><thead><tr><th style="width:6%">Bil.</th><th>Nama</th><th style="width:20%">No. MyKad</th><th style="width:16%">No. Telefon</th><th style="width:18%">No. MGP</th></tr></thead>
-      <tbody>${a.mgpList.map((m,i)=>`<tr><td class="center">${i+1}.</td><td>${v(m.nama)}</td><td class="nw">${v(m.ic)}</td><td class="nw">${v(m.tel)}</td><td>${v(m.mgp)}</td></tr>`).join('')}</tbody></table>
+    ${mL.length ? `<table class="box lst"><thead><tr><th style="width:6%">Bil.</th><th>Nama</th><th style="width:20%">No. MyKad</th><th style="width:16%">No. Telefon</th><th style="width:18%">No. MGP</th></tr></thead>
+      <tbody>${mL.map((m,i)=>`<tr><td class="center">${m0+i+1}.</td><td>${v(m.nama)}</td><td class="nw">${v(m.ic)}</td><td class="nw">${v(m.tel)}</td><td>${v(m.mgp)}</td></tr>`).join('')}</tbody></table>`
+      : '<p style="margin:3px 0">—</p>'}
     <div class="sub">B. Peserta</div>
-    ${a.peserta.length ? `<table class="box lst"><thead><tr><th style="width:5%">Bil.</th><th style="width:21%">Nama</th><th style="width:13%">MyKad / Passport</th><th>Alamat</th><th style="width:11%">No. Telefon</th><th style="width:11%">Tel. Waris</th><th style="width:7%">Jantina</th><th style="width:9%">Warga­negara</th></tr></thead>
-      <tbody>${a.peserta.map((m,i)=>`<tr><td class="center">${i+1}.</td><td>${v(m.nama)}</td><td class="nw">${v(m.ic)}</td><td>${v(m.alamat)}</td><td class="nw">${v(m.tel)}</td><td class="nw">${v(m.waris)}</td><td>${v(m.jantina)}</td><td>${v(m.wn === 'Bukan Warganegara' ? 'Tidak' : m.wn === 'Warganegara' ? 'Ya' : m.wn)}</td></tr>`).join('')}</tbody></table>`
-      : '<p style="margin:3px 0">Tiada peserta.</p>'}`;
+    ${pL.length ? `<table class="box lst"><thead><tr><th style="width:5%">Bil.</th><th style="width:21%">Nama</th><th style="width:13%">MyKad / Passport</th><th>Alamat</th><th style="width:11%">No. Telefon</th><th style="width:11%">Tel. Waris</th><th style="width:7%">Jantina</th><th style="width:9%">Warga­negara</th></tr></thead>
+      <tbody>${pL.map((m,i)=>`<tr><td class="center">${p0+i+1}.</td><td>${v(m.nama)}</td><td class="nw">${v(m.ic)}</td><td>${v(m.alamat)}</td><td class="nw">${v(m.tel)}</td><td class="nw">${v(m.waris)}</td><td>${v(m.jantina)}</td><td>${v(m.wn === 'Bukan Warganegara' ? 'Tidak' : m.wn === 'Warganegara' ? 'Ya' : m.wn)}</td></tr>`).join('')}</tbody></table>`
+      : `<p style="margin:3px 0">${a.peserta.length ? '—' : 'Tiada peserta.'}</p>`}`;
+  };
   const ringkas = `${a.mgpList.length} MGP + ${a.peserta.length} peserta = ${total(a)} orang`;
   const page = (inner, wm) => `<section class="page sal"><table class="pg"><thead><tr><td></td></tr></thead><tfoot><tr><td></td></tr></tfoot><tbody><tr><td>
     ${wm ? '<div class="watermark">SALINAN</div>' : ''}${inner}</td></tr></tbody></table></section>`;
-  const satu = head + lamp(`<h5>3. Lampiran A — Senarai MGP &amp; Peserta (${ringkas})</h5>`) + perakuan;
+  const satu = head + lamp(`<h5>3. Lampiran A — Senarai MGP &amp; Peserta (${ringkas})</h5>`, 0) + perakuan;
   /* Ukur ketinggian pada lebar SEMPIT (150mm) dan had 235mm: Safari iPhone menambah jidar & pengepala/pengaki sendiri,
      jadi ruang sebenar lebih kecil daripada A4 penuh. Anggaran selamat ini mengelakkan kandungan terpotong. */
   let mm = 999;   // jika pengukuran gagal: dua halaman (selamat)
@@ -1042,11 +1051,16 @@ function printSalinan(a){
     mm = ukur.firstElementChild.getBoundingClientRect().height / (96/25.4);
     ukur.remove();
   } catch (e) {}
-  $('#printArea').innerHTML = mm <= 235
+  // Satu halaman hanya jika Lampiran A satu kumpulan (1 MGP + ≤7 peserta) DAN semuanya muat.
+  // Jika tidak: halaman 1 = Bahagian 1 & 2; kemudian satu halaman bagi setiap kumpulan; Perakuan pada halaman terakhir.
+  $('#printArea').innerHTML = kumpulan === 1 && mm <= 235
     ? page(satu, true)
     : page(head + `<p class="nota">Bahagian 3 (Lampiran A) dan Bahagian 4 (Perakuan Pemohon) di halaman berikutnya.</p>`, true)
-      + page(`<div class="t2" style="margin:0 0 4px">No. Rujukan Permohonan: <b>${esc(a.ref)}</b></div>`
-             + lamp(`<h5 style="margin-top:4px">3. Lampiran A — Senarai MGP &amp; Peserta (${ringkas})</h5>`) + perakuan, true);
+      + Array.from({length: kumpulan}, (_, g) => page(
+          `<div class="t2" style="margin:0 0 4px">No. Rujukan Permohonan: <b>${esc(a.ref)}</b></div>`
+          + lamp(`<h5 style="margin-top:4px">3. Lampiran A — Senarai MGP &amp; Peserta${kumpulan > 1 ? ` (Kumpulan ${g+1} daripada ${kumpulan})` : ''}</h5>
+                  <div class="nota" style="margin:0 0 4px">${ringkas}</div>`, g)
+          + (g === kumpulan - 1 ? perakuan : ''), true)).join('');
   cetak('Salinan-Permohonan-' + a.ref);
 }
 function printPermit(a, isAdmin, salinan){
