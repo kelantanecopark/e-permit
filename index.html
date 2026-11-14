@@ -1043,10 +1043,9 @@ function printSalinan(a){
       <tbody>${pL.map((m,i)=>`<tr><td class="center">${p0+i+1}.</td><td>${v(m.nama)}</td><td class="nw">${v(m.ic)}</td><td>${v(m.alamat)}</td><td class="nw">${v(m.tel)}</td><td class="nw">${v(m.waris)}</td><td>${v(m.jantina)}</td><td>${v(m.wn === 'Bukan Warganegara' ? 'Tidak' : m.wn === 'Warganegara' ? 'Ya' : m.wn)}</td></tr>`).join('')}</tbody></table>`
       : `<p style="margin:3px 0">${a.peserta.length ? '—' : 'Tiada peserta.'}</p>`}`;
   };
-  const ringkas = `${a.mgpList.length} MGP + ${a.peserta.length} peserta = ${total(a)} orang`;
   const page = (inner, wm, land) => `<section class="page sal${land ? ' land' : ''}"><table class="pg"><thead><tr><td></td></tr></thead><tfoot><tr><td></td></tr></tfoot><tbody><tr><td>
     ${wm ? '<div class="watermark">SALINAN</div>' : ''}${inner}</td></tr></tbody></table></section>`;
-  const satu = head + lamp(`<h5>3. Lampiran A — Senarai MGP &amp; Peserta (${ringkas})</h5>`, 0) + perakuan;
+  const satu = head + lamp(`<h5>3. Lampiran A — Senarai MGP &amp; Peserta</h5>`, 0) + perakuan;
   /* Ukur ketinggian pada lebar SEMPIT (150mm) dan had 235mm: Safari iPhone menambah jidar & pengepala/pengaki sendiri,
      jadi ruang sebenar lebih kecil daripada A4 penuh. Anggaran selamat ini mengelakkan kandungan terpotong. */
   let mm = 999;   // jika pengukuran gagal: dua halaman (selamat)
@@ -1065,8 +1064,7 @@ function printSalinan(a){
     : page(head + `<p class="nota">Bahagian 3 (Lampiran A) dan Bahagian 4 (Perakuan Pemohon) di halaman berikutnya.</p>`, true)
       + Array.from({length: kumpulan}, (_, g) => page(
           `<div class="t2" style="margin:0 0 4px">No. Rujukan Permohonan: <b>${esc(a.ref)}</b></div>`
-          + lamp(`<h5 style="margin-top:4px">3. Lampiran A — Senarai MGP &amp; Peserta${kumpulan > 1 ? ` (Kumpulan ${g+1} daripada ${kumpulan})` : ''}</h5>
-                  <div class="nota" style="margin:0 0 4px">${ringkas}</div>`, g)
+          + lamp(`<h5 style="margin-top:4px">3. Lampiran A — Senarai MGP &amp; Peserta${kumpulan > 1 ? ` (Kumpulan ${g+1} daripada ${kumpulan})` : ''}</h5>`, g)
           + (g === kumpulan - 1 ? perakuan : ''), true, true)).join('');   // halaman Lampiran A: landskap
   cetak('Salinan-Permohonan-' + a.ref);
 }
