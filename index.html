@@ -300,6 +300,44 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 #printHelp .lnk{display:block;word-break:break-all;background:#f3f7f4;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;margin:4px 0 10px;user-select:all;-webkit-user-select:all}
 #printHelp .row{display:flex;gap:8px;flex-wrap:wrap}
 @media print{#printHelp{display:none!important}}
+/* ---------- ADUAN ---------- */
+.ad-intro{background:linear-gradient(135deg,#f3faf5,#fff 60%)}
+.ad-hero{display:flex;gap:16px;align-items:flex-start}
+.ad-hero h2{margin:2px 0 6px;font-size:18px;color:var(--forest)}
+.ad-hero p{margin:0;color:#3d5246;font-size:14px;line-height:1.55}
+.ad-ico{flex:none;width:52px;height:52px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--leaf),var(--forest));box-shadow:0 8px 18px rgba(14,59,44,.25)}
+.ad-steps{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.ad-steps span{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#3d5246;background:#fff;border:1px solid var(--line);padding:6px 12px 6px 6px;border-radius:999px}
+.ad-steps b{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--mint);color:var(--forest);font-size:12px}
+.ad-count{text-align:right}
+.ad-count.ok{color:var(--leaf)}
+.ad-hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
+.cap{display:flex;align-items:center;gap:14px;max-width:380px;padding:12px 14px;border:1px solid #d3ddd7;border-radius:12px;background:#f9fbfa;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:border .2s,box-shadow .2s}
+.cap.err{border-color:var(--red);box-shadow:0 0 0 4px rgba(179,38,30,.1);animation:capShake .35s}
+.cap.ok{border-color:#9fd3b2;background:#f1faf4}
+.cap-box{flex:none;width:30px;height:30px;border:2px solid #9aa9a1;border-radius:6px;background:#fff;cursor:pointer;display:grid;place-items:center;padding:0;transition:.2s}
+.cap-box:hover{border-color:var(--leaf)}
+.cap-box:focus-visible{outline:none;box-shadow:0 0 0 4px rgba(47,143,91,.2)}
+.cap.busy .cap-box{border-color:transparent;border-top-color:var(--leaf);border-right-color:var(--leaf);border-radius:50%;animation:capSpin .8s linear infinite;cursor:default}
+.cap.ok .cap-box{border-color:transparent;background:none;cursor:default}
+.cap-tick{display:none;width:11px;height:20px;border:solid var(--leaf);border-width:0 4px 4px 0;transform:rotate(45deg) translate(-2px,-2px);animation:capTick .35s ease}
+.cap.ok .cap-tick{display:block}
+.cap-txt{flex:1;display:flex;flex-direction:column;line-height:1.25}
+.cap-txt b{font-size:14.5px;font-weight:600;color:var(--ink)}
+.cap-txt small{font-size:11.5px;color:var(--muted)}
+.cap-brand{flex:none;display:flex;flex-direction:column;align-items:center;color:var(--leaf);text-align:center}
+.cap-brand small{font-size:8.5px;line-height:1.15;color:var(--muted);margin-top:2px;letter-spacing:.02em}
+.cap-q{margin-top:12px;max-width:520px;padding:14px;border:1px dashed #b8cbbf;border-radius:12px;background:#fff;animation:fade .3s ease}
+.cap-q p{margin:0 0 10px;font-size:13px;color:#3d5246}
+.cap-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cap-row canvas{border-radius:8px;border:1px solid var(--line);background:#eef5f0}
+.cap-row .input{width:110px;flex:none;text-align:center;font-size:16px;font-weight:600}
+.cap-new{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:18px;color:var(--forest)}
+.cap-new:hover{background:var(--mint)}
+@keyframes capSpin{to{transform:rotate(360deg)}}
+@keyframes capTick{from{opacity:0;transform:rotate(45deg) translate(-2px,-2px) scale(.3)}to{opacity:1}}
+@keyframes capShake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media(max-width:600px){.ad-hero{flex-direction:column}.cap{max-width:none}}
 @page{size:A4 portrait;margin:14mm 16mm}
 @page lampiran{size:A4 landscape;margin:12mm 12mm}
 @media print{
@@ -390,6 +428,8 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M12 18v-6M9 15h6"/></svg>Permohonan</button>
       <button data-view="semak">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Semak Status</button>
+      <button data-view="aduan">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v4M12 14h.01"/></svg>Aduan</button>
     </nav>
   </div>
 </header>
@@ -547,6 +587,92 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
   </div>
 </section>
 
+<!-- ================= VIEW: ADUAN ================= -->
+<section class="view" id="view-aduan">
+  <form id="adForm" novalidate>
+    <div class="card ad-intro"><div class="card-body">
+      <div class="ad-hero">
+        <div class="ad-ico"><svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 9h8M8 13h5"/></svg></div>
+        <div>
+          <h2>Aduan &amp; Maklum Balas Pengguna</h2>
+          <p>Kongsikan aduan, maklum balas atau cadangan anda berkaitan Hutan Simpanan Kekal dan perkhidmatan e-Permit. Setiap aduan akan diberi <b>No. Aduan</b> dan disemak oleh pegawai kami.</p>
+        </div>
+      </div>
+      <div class="ad-steps"><span><b>1</b>Isi aduan</span><span><b>2</b>Pengesahan keselamatan</span><span><b>3</b>Terima No. Aduan &amp; emel pengesahan</span></div>
+    </div></div>
+
+    <div class="card">
+      <div class="card-head"><div class="step">1</div><div><h2>BUTIRAN ADUAN</h2></div></div>
+      <div class="card-body grid">
+        <div class="grid g2">
+          <div class="field"><label>Jenis Aduan <span class="req">*</span></label>
+            <select class="input" name="jenis" required>
+              <option value="">— Pilih jenis aduan —</option>
+              <option>Permohonan / Permit</option><option>Bayaran</option><option>Malim Gunung Perhutanan (MGP)</option>
+              <option>Kemudahan &amp; Laluan</option><option>Kebersihan &amp; Alam Sekitar</option><option>Keselamatan</option>
+              <option>Sistem e-Permit (Teknikal)</option><option>Cadangan / Penghargaan</option><option>Lain-lain</option>
+            </select></div>
+          <div class="field"><label>Tajuk Aduan <span class="req">*</span></label>
+            <input class="input" name="tajuk" maxlength="150" required placeholder="cth. Laluan pendakian rosak selepas hujan" autocomplete="off"></div>
+        </div>
+        <div class="field"><label>Keterangan Aduan <span class="req">*</span></label>
+          <textarea class="input" name="keterangan" rows="5" maxlength="3000" required placeholder="Terangkan aduan anda dengan jelas — lokasi, tarikh, masa kejadian dan perkara yang berlaku."></textarea>
+          <div class="hint ad-count"><span id="adCount">0</span> / 3000 aksara · sekurang-kurangnya 15 aksara</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="step">2</div><div><h2>MAKLUMAT PENGADU</h2><p>Untuk tujuan maklum balas sahaja — tidak akan didedahkan kepada pihak lain</p></div></div>
+      <div class="card-body grid g3">
+        <div class="field"><label>Nama <span class="req">*</span></label>
+          <input class="input" name="nama" maxlength="120" required autocomplete="name" placeholder="Nama penuh"></div>
+        <div class="field"><label>Alamat Emel <span class="req">*</span></label>
+          <input class="input" name="emel" type="email" maxlength="120" required autocomplete="email" inputmode="email" placeholder="nama@contoh.com"></div>
+        <div class="field"><label>No. Telefon <span class="req">*</span></label>
+          <input class="input" name="telefon" type="tel" maxlength="20" required autocomplete="tel" inputmode="tel" placeholder="cth. 012-3456789"></div>
+        <div class="ad-hp" aria-hidden="true"><label>Laman web<input name="laman" tabindex="-1" autocomplete="off"></label></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head"><div class="step">3</div><div><h2>PENGESAHAN KESELAMATAN</h2><p>Security Verification</p></div></div>
+      <div class="card-body">
+        <div class="cap" id="cap">
+          <button type="button" class="cap-box" id="capBox" role="checkbox" aria-checked="false" aria-label="Saya bukan robot"><span class="cap-tick"></span></button>
+          <div class="cap-txt"><b id="capLbl">Saya bukan robot</b><small id="capSub">I'm not a robot</small></div>
+          <div class="cap-brand"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></svg><small>Pengesahan<br>Keselamatan</small></div>
+        </div>
+        <div class="cap-q" id="capQ" hidden>
+          <p>Sila jawab soalan di bawah untuk meneruskan:</p>
+          <div class="cap-row">
+            <canvas id="capCv" width="170" height="52" aria-label="Soalan pengesahan"></canvas>
+            <input class="input" id="capIn" inputmode="numeric" maxlength="3" placeholder="Jawapan" autocomplete="off" aria-label="Jawapan soalan pengesahan">
+            <button type="button" class="btn btn-primary" id="capOk">Sahkan</button>
+            <button type="button" class="cap-new" id="capNew" title="Soalan baharu" aria-label="Soalan baharu">↻</button>
+          </div>
+        </div>
+      </div>
+      <div class="submit-bar">
+        <span style="color:var(--muted);font-size:13px"><span style="color:var(--red)">*</span> Sila lengkapkan ruangan ini.</span>
+        <div style="display:flex;gap:10px">
+          <button type="reset" class="btn btn-ghost">Padam</button>
+          <button type="submit" class="btn btn-primary btn-lg" id="adHantar">Hantar Aduan →</button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <div class="card" id="adSuccess" style="display:none"><div class="success">
+    <div class="ring"><svg width="38" height="38" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+    <h2 style="margin:0">Aduan Berjaya Dihantar</h2>
+    <div class="refbox" id="adRef"></div>
+    <p style="color:var(--muted);margin:10px auto 0;font-size:13px;max-width:520px">Terima kasih. Salinan pengesahan telah dihantar ke emel anda. Sila simpan No. Aduan ini untuk sebarang rujukan.</p>
+    <div style="margin-top:18px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-neutral" id="adBaru">Aduan Baharu</button>
+    </div>
+  </div></div>
+</section>
+
 </main>
 <footer class="site">© 2026 Jabatan Perhutanan Negeri Kelantan · Hak cipta Unit Ekopark dan Hutan Taman Negeri.</footer>
 </div>
@@ -601,7 +727,8 @@ function show(v){
 $$('.nav button').forEach(b=>b.onclick=()=>show(b.dataset.view));
 const SUBTITLE = {
   mohon:$('#bSub').innerHTML,
-  semak:''
+  semak:'',
+  aduan:''
 };
 /* Ikon tab pelayar */
 (() => {
@@ -1008,6 +1135,96 @@ async function submitPay(e){
   }catch(err){ toast('Gagal: ' + (err.message || err)); btn.disabled = false; btn.textContent = label; }
 }
 $('#qRef').onkeydown = e=>{ if(e.key==='Enter') doSemak(); };
+
+/* ---------- ADUAN PENGGUNA ----------
+   Pengesahan "Saya bukan robot": soalan ringkas daripada pelayan (token bertandatangan; jawapan tidak dihantar ke
+   pelayar) → token lulus sekali guna. Pelayan turut menyemak medan perangkap, masa mengisi & had kekerapan. */
+const adForm = $('#adForm');
+const AD = {mula: Date.now(), lulus: '', luput: 0, token: ''};
+const adSet = (cls, lbl, sub) => {
+  const c = $('#cap'); c.classList.remove('busy', 'ok', 'err'); if (cls) c.classList.add(cls);
+  $('#capLbl').textContent = lbl || 'Saya bukan robot'; $('#capSub').textContent = sub || "I'm not a robot";
+  $('#capBox').setAttribute('aria-checked', cls === 'ok' ? 'true' : 'false');
+};
+function adLukis(soalan){                                   // soalan dilukis pada kanvas (bukan teks biasa)
+  const cv = $('#capCv'), g = cv.getContext('2d'), W = cv.width, H = cv.height, rnd = (a, b) => a + Math.random() * (b - a);
+  const bg = g.createLinearGradient(0, 0, W, H); bg.addColorStop(0, '#e9f4ec'); bg.addColorStop(1, '#f7fbf8');
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  for (let i = 0; i < 5; i++){ g.strokeStyle = `rgba(14,59,44,${rnd(.12,.28)})`; g.lineWidth = rnd(1, 2);
+    g.beginPath(); g.moveTo(rnd(0, W/3), rnd(0, H)); g.bezierCurveTo(rnd(0, W), rnd(0, H), rnd(0, W), rnd(0, H), rnd(W*.6, W), rnd(0, H)); g.stroke(); }
+  for (let i = 0; i < 40; i++){ g.fillStyle = `rgba(47,143,91,${rnd(.15,.4)})`; g.fillRect(rnd(0, W), rnd(0, H), 1.6, 1.6); }
+  const ch = [...soalan]; let x = 12;
+  ch.forEach(c => { g.save(); g.translate(x, H/2 + rnd(-4, 4)); g.rotate(rnd(-.25, .25));
+    g.font = `700 ${Math.round(rnd(20, 25))}px Georgia, "Times New Roman", serif`; g.fillStyle = `hsl(${Math.round(rnd(140, 165))},55%,${Math.round(rnd(18, 30))}%)`;
+    g.textBaseline = 'middle'; g.fillText(c, 0, 0); g.restore(); x += c === ' ' ? 7 : rnd(13, 16); });
+}
+async function adCabaran(){
+  adSet('busy', 'Menyemak…', 'Sila tunggu'); $('#capIn').value = '';
+  try{
+    const r = await api({action:'cabaran'}); if (!r.ok) throw new Error(r.error || 'Ralat pelayan');
+    AD.token = r.token; adLukis(r.soalan);
+    adSet('', 'Saya bukan robot', 'Jawab soalan di bawah'); $('#capQ').hidden = false; $('#capIn').focus();
+  }catch(err){ adSet('err', 'Tidak dapat menyemak', 'Sila cuba semula'); toast('Pengesahan: ' + (err.message || err)); }
+}
+async function adSahkan(){
+  const jaw = $('#capIn').value.trim();
+  if (!jaw){ $('#capIn').classList.add('invalid'); $('#capIn').focus(); return; }
+  const b = $('#capOk'); b.disabled = true;
+  try{
+    const r = await api({action:'sahkanCabaran', token:AD.token, jawapan:jaw});
+    if (!r.ok) throw new Error(r.error || 'Ralat pelayan');
+    AD.lulus = r.lulus; AD.luput = Date.now() + 19*60*1000;
+    $('#capQ').hidden = true; adSet('ok', 'Disahkan', 'Verified · sah selama 20 minit');
+  }catch(err){
+    const m = err.message || String(err); $('#capIn').classList.add('invalid'); toast(m);
+    if (/Terlalu banyak|tamat/i.test(m)) adCabaran(); else { $('#capIn').select(); }
+  }finally{ b.disabled = false; }
+}
+function adReset(){
+  AD.lulus = ''; AD.token = ''; AD.luput = 0; AD.mula = Date.now();
+  $('#capQ').hidden = true; $('#capIn').value = ''; adSet('');
+}
+$('#capBox').onclick = () => { if (!$('#cap').classList.contains('ok') && !$('#cap').classList.contains('busy')) adCabaran(); };
+$('#capOk').onclick = adSahkan;
+$('#capNew').onclick = adCabaran;
+$('#capIn').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); adSahkan(); } });
+$('#capIn').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, ''); e.target.classList.remove('invalid'); });
+adForm.addEventListener('input', e => e.target.classList && e.target.classList.remove('invalid'));
+adForm.keterangan.addEventListener('input', () => { const n = adForm.keterangan.value.trim().length;
+  $('#adCount').textContent = n; $('#adCount').parentElement.classList.toggle('ok', n >= 15); });
+adForm.emel.addEventListener('input', () => { const v = adForm.emel.value.toLowerCase().replace(/\s+/g, ''); if (v !== adForm.emel.value) adForm.emel.value = v; });
+adForm.addEventListener('reset', () => setTimeout(() => { $$('.invalid', adForm).forEach(i => i.classList.remove('invalid')); $('#adCount').textContent = '0'; $('#adCount').parentElement.classList.remove('ok'); adReset(); }));
+adForm.onsubmit = async e => {
+  e.preventDefault();
+  const v = k => adForm[k].value.trim(), tel = v('telefon').replace(/[\s-]/g, '');
+  const semak = [['jenis', !!v('jenis')], ['tajuk', v('tajuk').length >= 5], ['keterangan', v('keterangan').length >= 15],
+    ['nama', v('nama').length >= 3], ['emel', EMEL_RE.test(v('emel'))], ['telefon', /^\+?\d{9,15}$/.test(tel)]];
+  const MSG = {jenis:'Sila pilih jenis aduan', tajuk:'Tajuk aduan sekurang-kurangnya 5 aksara', keterangan:'Keterangan aduan sekurang-kurangnya 15 aksara',
+    nama:'Sila isi nama anda', emel:'Format emel tidak sah (cth. nama@contoh.com)', telefon:'No. telefon tidak sah (cth. 012-3456789)'};
+  let bad = null;
+  semak.forEach(([k, ok]) => { adForm[k].classList.toggle('invalid', !ok); if (!ok && !bad) bad = k; });
+  if (bad){ adForm[bad].focus(); adForm[bad].scrollIntoView({block:'center', behavior:'smooth'}); return toast(MSG[bad]); }
+  if (!AD.lulus || Date.now() > AD.luput){
+    if (AD.lulus) adReset();
+    $('#cap').classList.add('err'); setTimeout(() => $('#cap').classList.remove('err'), 600);
+    $('#cap').scrollIntoView({block:'center', behavior:'smooth'});
+    return toast('Sila lengkapkan Pengesahan Keselamatan — klik "Saya bukan robot".');
+  }
+  const btn = $('#adHantar'), label = btn.textContent; btn.disabled = true; btn.textContent = 'Menghantar…';
+  try{
+    const r = await api({action:'aduan', lulus:AD.lulus, masa:Date.now() - AD.mula,
+      aduan:{jenis:v('jenis'), tajuk:v('tajuk'), keterangan:v('keterangan'), nama:v('nama'), emel:v('emel'), telefon:v('telefon'), laman:adForm.laman.value}});
+    if (!r.ok) throw new Error(r.error || 'Ralat pelayan');
+    $('#adRef').textContent = r.ref; adForm.style.display = 'none'; $('#adSuccess').style.display = '';
+    window.scrollTo({top:0, behavior:'smooth'});
+  }catch(err){
+    const m = err.message || String(err); toast('Gagal menghantar: ' + m);
+    if (/Pengesahan Keselamatan/i.test(m)) adReset();
+  }finally{ btn.disabled = false; btn.textContent = label; }
+};
+$('#adBaru').onclick = () => { adForm.reset(); adForm.style.display = ''; $('#adSuccess').style.display = 'none'; adReset(); };
+/* Pautan terus ke tab Aduan: …/#aduan atau ?aduan */
+if (location.hash === '#aduan' || new URLSearchParams(location.search).has('aduan')) setTimeout(() => show('aduan'));
 
 /* ---------- PRINT: BORANG 6 + LAMPIRAN A ---------- */
 const TITLE0 = document.title;
