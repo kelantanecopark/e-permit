@@ -99,6 +99,34 @@ main{max-width:1200px;margin:22px auto 60px;padding:0 24px;position:relative;z-i
 .field .hint{font-size:11.5px;color:var(--muted);margin-top:4px}
 .input,select.input,textarea.input{width:100%;padding:10px 12px;border:1px solid #cdd8d1;border-radius:10px;background:#fff;transition:border .15s,box-shadow .15s;outline:none}
 textarea.input{resize:vertical;min-height:70px}
+/* No. telefon dengan kod negara */
+.tel-group{display:flex;align-items:stretch;border:1px solid #cdd8d1;border-radius:10px;background:#fff;transition:border .15s,box-shadow .15s}
+.tel-group:focus-within{border-color:var(--leaf);box-shadow:0 0 0 4px rgba(47,143,91,.14)}
+.tel-group:has(.invalid){border-color:var(--red);box-shadow:0 0 0 4px rgba(179,38,30,.1)}
+.tel-group .input{border:0;box-shadow:none!important;border-radius:0 10px 10px 0;min-width:0}
+.tel-group .tel-cc{position:relative;display:flex;align-items:center;gap:7px;margin:0;padding:0 10px 0 12px;font-weight:400;border-right:1px solid #e1e8e3;background:#f6f9f7;border-radius:10px 0 0 10px;flex:0 0 auto;cursor:pointer;color:var(--ink);font-size:14px}
+.tel-cc:hover{background:var(--mint)}
+.tel-cc .iso{font-size:10.5px;font-weight:700;letter-spacing:.04em;color:#fff;background:var(--forest-2);border-radius:4px;padding:2px 5px;line-height:1.2}
+.tel-cc .dial{font-weight:600;font-variant-numeric:tabular-nums}
+.tel-cc svg{color:var(--muted)}
+.tel-cc select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px}
+.tel-cc select:disabled{cursor:default}
+@media(min-width:641px){   /* jadual Lampiran A (desktop): lebar minimum setiap lajur supaya seimbang */
+  #tblMgp td,#tblPes td{padding:6px 4px}
+  .tel-group.sm{min-width:170px}
+  .tel-group.sm .tel-cc{gap:4px;padding:0 5px 0 7px}
+  table.data .tel-group.sm .input{padding:8px 7px}
+  .tel-group.sm .tel-cc svg{display:none}
+  table.data td .input[data-k=nama]{min-width:130px}
+  table.data td .input[data-k=alamat]{min-width:125px}
+  table.data td .input[data-k=ic]{min-width:110px}
+  table.data td .input[data-k=mgp]{min-width:120px}
+  table.data td select[data-k=jantina]{min-width:85px}
+  table.data td select[data-k=wn]{min-width:122px}
+}
+.tel-group.sm .tel-cc{gap:5px;padding:0 7px 0 8px;font-size:13px}
+.tel-group.sm .tel-cc .iso{font-size:9.5px;padding:1px 4px}
+.tel-group:has(.input[readonly]) .tel-cc{background:#eef2ef}
 .input:focus{border-color:var(--leaf);box-shadow:0 0 0 4px rgba(47,143,91,.14)}
 .input.invalid{border-color:var(--red);box-shadow:0 0 0 4px rgba(179,38,30,.1)}
 .prefix{display:flex}.prefix span{padding:10px 12px;background:#eef3f0;border:1px solid #cdd8d1;border-right:0;border-radius:10px 0 0 10px;font-weight:600;color:var(--forest);font-size:14px}
@@ -404,7 +432,12 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
         <div class="field"><label>No. K.P.P.N (MyKad) <span class="req">*</span></label><input class="input" name="kppn" autocomplete="off" required placeholder="cth. 850101-03-5123" data-ic></div>
         <div class="field"><label>No. MGP <span class="req">*</span></label><input class="input" name="mgp" autocomplete="off" required placeholder="cth. MGP/KTN/0123"></div>
         <div class="field"><label>Nama Persatuan / Kelab / Syarikat</label><input class="input" name="persatuan" autocomplete="section-pemohon organization" placeholder="Pilihan"></div>
-        <div class="field"><label>No. Telefon <span class="req">*</span></label><input class="input" name="telefon" autocomplete="section-pemohon tel" required placeholder="cth. 012-3456789" inputmode="tel"></div>
+        <div class="field"><label for="telNo">No. Telefon <span class="req">*</span></label>
+          <div class="tel-group">
+            <label class="tel-cc" title="Pilih kod negara"><span class="iso" id="telIso">MY</span><span class="dial" id="telDial">+60</span>
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+              <select id="telCC" aria-label="Kod negara"></select></label>
+            <input class="input" id="telNo" name="telefon" autocomplete="section-pemohon tel-national" required placeholder="cth. 012-3456789" inputmode="tel"></div></div>
         <div class="field span2"><label>Alamat <span class="req">*</span></label><textarea class="input" name="alamat" autocomplete="section-pemohon street-address" required rows="2"></textarea></div>
         <div class="field"><label>Emel</label><input class="input" type="email" name="emel" autocomplete="section-pemohon email" placeholder="nama@contoh.com"></div>
       </div>
@@ -573,9 +606,34 @@ const SUBTITLE = {
 /* ---------- DYNAMIC ROWS ---------- */
 const mgpCols = [['nama','Nama penuh'],['ic','No. MyKad'],['tel','No. Telefon'],['mgp','No. MGP']];
 const pesCols = [['nama','Nama penuh'],['ic','MyKad / Passport'],['alamat','Alamat'],['tel','No. Telefon'],['waris','Tel. Waris']];
+/* ---------- KOD NEGARA TELEFON (dikongsi: pemohon & Lampiran A) ---------- */
+// [ISO, nama, kod dail] — Malaysia & ASEAN dahulu, kemudian negara pelancong utama (abjad)
+const NEGARA = [['MY','Malaysia','60'],['SG','Singapura','65'],['BN','Brunei','673'],['ID','Indonesia','62'],['TH','Thailand','66'],
+  ['PH','Filipina','63'],['VN','Vietnam','84'],['KH','Kemboja','855'],['MM','Myanmar','95'],['LA','Laos','856'],
+  ['AU','Australia','61'],['BD','Bangladesh','880'],['CA','Kanada','1'],['CN','China','86'],['FR','Perancis','33'],['DE','Jerman','49'],
+  ['HK','Hong Kong','852'],['IN','India','91'],['IT','Itali','39'],['JP','Jepun','81'],['KR','Korea Selatan','82'],['NL','Belanda','31'],
+  ['NZ','New Zealand','64'],['PK','Pakistan','92'],['QA','Qatar','974'],['SA','Arab Saudi','966'],['ES','Sepanyol','34'],
+  ['CH','Switzerland','41'],['TW','Taiwan','886'],['TR','Turki','90'],['AE','Emiriah Arab Bersatu','971'],['GB','United Kingdom','44'],['US','Amerika Syarikat','1']];
+const CC_OPTS = NEGARA.map(([iso,n,d],i)=>`${i===10?'<option disabled>──────────</option>':''}<option value="${iso}"${iso==='MY'?' selected':''}>${n} (+${d})</option>`).join('');
+const negaraOf = iso => NEGARA.find(x => x[0] === iso) || NEGARA[0];
+const ccHtml = (sel, small) => `<label class="tel-cc" title="Pilih kod negara"><span class="iso">MY</span><span class="dial">+60</span>
+  <svg width="${small?10:12}" height="${small?10:12}" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+  <select ${sel} aria-label="Kod negara">${CC_OPTS}</select></label>`;
+function ccShow(sel){ const [iso,,d] = negaraOf(sel.value), cc = sel.closest('.tel-cc'); $('.iso',cc).textContent = iso; $('.dial',cc).textContent = '+' + d; }
+// Nilai disimpan: Malaysia kekal format tempatan (cth. 012-3456789); negara lain "+kod nombor" (tanpa 0 di hadapan).
+function telJoin(iso, raw){ raw = (raw || '').trim(); if (!raw || raw.startsWith('+') || iso === 'MY') return raw; return `+${negaraOf(iso)[2]} ${raw.replace(/^0+/, '')}`; }
+function telOk(iso, raw){
+  const n = (raw || '').replace(/\D/g,'');
+  return iso === 'MY' && !(raw || '').trim().startsWith('+') ? (n.length >= 9 && n.length <= 11 && n[0] === '0' || n.startsWith('60') && n.length >= 10 && n.length <= 13)
+                                                             : (n.length >= 6 && n.length <= 15);
+}
+const TEL_KEYS = ['tel','waris'];
+
 function addRow(tbl, cols, extra){
   const tb = $('tbody', tbl), tr = document.createElement('tr');
-  tr.innerHTML = `<td class="bil"></td>` + cols.map(([k,p])=>`<td><input class="input" data-k="${k}" placeholder="${p}" autocomplete="off"></td>`).join('')
+  tr.innerHTML = `<td class="bil"></td>` + cols.map(([k,p])=> TEL_KEYS.includes(k)
+      ? `<td><div class="tel-group sm">${ccHtml(`data-cc="${k}"`, true)}<input class="input" data-k="${k}" placeholder="${p}" autocomplete="off" inputmode="tel"></div></td>`
+      : `<td><input class="input" data-k="${k}" placeholder="${p}" autocomplete="off"></td>`).join('')
     + (extra ? `<td><select class="input" data-k="jantina"><option>Lelaki</option><option>Wanita</option></select></td>
        <td><select class="input" data-k="wn"><option>Warganegara</option><option>Bukan Warganegara</option></select></td>` : '')
     + `<td class="act"><button type="button" class="icon-btn" title="Buang baris"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></td>`;
@@ -587,6 +645,7 @@ function addRow(tbl, cols, extra){
     }
     tr.remove(); renumber();
   };
+  $$('select[data-cc]', tr).forEach(s => s.addEventListener('change', () => { ccShow(s); const i = $(`[data-k="${s.dataset.cc}"]`, tr); i.classList.remove('invalid'); i.focus(); }));
   tr.addEventListener('input', recount); tr.addEventListener('change', recount);
   tb.appendChild(tr); renumber();
   return tr;
@@ -597,7 +656,19 @@ function renumber(){
   recount();
 }
 const rowFilled = r => $$('input',r).some(i=>i.value.trim());
-function readRows(t){ return $$(t+' tbody tr').filter(rowFilled).map(r=>{ const o={}; $$('[data-k]',r).forEach(i=>o[i.dataset.k]=i.value.trim()); return o; }); }
+function readRows(t){ return $$(t+' tbody tr').filter(rowFilled).map(r=>{ const o={}; $$('[data-k]',r).forEach(i=>{
+  const cc = TEL_KEYS.includes(i.dataset.k) && $(`select[data-cc="${i.dataset.k}"]`, r);
+  o[i.dataset.k] = cc ? telJoin(cc.value, i.value) : i.value.trim(); }); return o; }); }
+/* Semak nombor telefon dalam Lampiran A (hanya yang diisi); pulangkan input pertama yang tidak sah */
+function rowsTelBad(){
+  let bad = null;
+  $$('#tblMgp tbody tr, #tblPes tbody tr').filter(rowFilled).forEach(r => TEL_KEYS.forEach(k => {
+    const i = $(`input[data-k="${k}"]`, r), s = $(`select[data-cc="${k}"]`, r);
+    if (!i || !s || !i.value.trim() || i.readOnly) return;
+    const ok = telOk(s.value, i.value); i.classList.toggle('invalid', !ok); if (!ok && !bad) bad = i;
+  }));
+  return bad;
+}
 function recount(){
   const m = readRows('#tblMgp'), p = readRows('#tblPes');
   const L=p.filter(x=>x.jantina==='Lelaki').length, W=p.length-L, WN=p.filter(x=>x.wn==='Warganegara').length;
@@ -647,6 +718,8 @@ function syncMgpSama(clear){
     else if (clear) i.value = '';
     i.readOnly = on;
   });
+  const cc = $('select[data-cc="tel"]', tr), ccP = $('#telCC');   // kod negara telefon ikut pemohon
+  if (cc && ccP){ if (on) cc.value = ccP.value; else if (clear) cc.value = 'MY'; cc.disabled = on; ccShow(cc); }
   recount();
 }
 $('#mgpSama').addEventListener('change', ()=>syncMgpSama(true));
@@ -710,6 +783,19 @@ form.dari.min = today(); form.dari.onchange = ()=>{ form.hingga.min = form.dari.
 form.addEventListener('input', e=>e.target.classList?.remove('invalid'));
 form.addEventListener('reset', ()=>setTimeout(()=>{ resetRows(); tempoh(); $$('.invalid',form).forEach(i=>i.classList.remove('invalid')); }));
 
+/* ---------- NO. TELEFON PEMOHON: KOD NEGARA ---------- */
+const telCC = $('#telCC');
+telCC.innerHTML = CC_OPTS;
+const telNegara = () => negaraOf(telCC.value);
+function telUpdate(){
+  ccShow(telCC);
+  form.telefon.placeholder = telCC.value === 'MY' ? 'cth. 012-3456789' : 'Nombor telefon';
+}
+telCC.addEventListener('change', ()=>{ telUpdate(); form.telefon.classList.remove('invalid'); form.telefon.focus(); if ($('#mgpSama').checked) syncMgpSama(); });
+form.addEventListener('reset', ()=>setTimeout(telUpdate));
+const telValue = () => telJoin(telCC.value, form.telefon.value);
+const telValid = () => telOk(telCC.value, form.telefon.value);
+
 /* ---------- SUBMIT ---------- */
 form.onsubmit = async e => {
   e.preventDefault();
@@ -717,11 +803,15 @@ form.onsubmit = async e => {
   $$('[required]', form).forEach(i=>{ const ok = i.value.trim(); i.classList.toggle('invalid', !ok); if(!ok && !bad) bad=i; });
   const ic = form.kppn.value.replace(/\D/g,'');
   if(!bad && ic.length!==12){ form.kppn.classList.add('invalid'); bad = form.kppn; msg = 'No. K.P.P.N mesti 12 digit'; }
+  if(!bad && !telValid()){ form.telefon.classList.add('invalid'); bad = form.telefon;
+    msg = telNegara()[0] === 'MY' ? 'No. telefon tidak sah (cth. 012-3456789)' : 'No. telefon tidak sah — semak kod negara dan nombor'; }
   const em = form.emel.value.trim();
   form.emel.classList.toggle('invalid', !!em && !EMEL_RE.test(em));
   if(!bad && em && !EMEL_RE.test(em)){ bad = form.emel; msg = 'Format emel tidak sah (cth. nama@contoh.com)'; }
   if(bad){ bad.focus(); bad.scrollIntoView({block:'center',behavior:'smooth'}); return toast(msg); }
   if(form.hingga.value < form.dari.value){ form.hingga.classList.add('invalid'); form.hingga.focus(); return toast('Tarikh hingga mesti selepas tarikh sah dari'); }
+  const telBad = rowsTelBad();
+  if(telBad){ telBad.focus(); telBad.scrollIntoView({block:'center',behavior:'smooth'}); return toast('No. telefon dalam Lampiran A tidak sah — semak kod negara dan nombor'); }
   const mgpList = readRows('#tblMgp'), peserta = readRows('#tblPes');
   if(!mgpList.length) return toast('Sila masukkan sekurang-kurangnya seorang MGP');
   if(peserta.length > mgpList.length * NISBAH){ ratioAlert(); return toast(`Nisbah 1 MGP : ${NISBAH} peserta — ${peserta.length} peserta memerlukan sekurang-kurangnya ${Math.ceil(peserta.length/NISBAH)} MGP`); }
@@ -738,7 +828,7 @@ form.onsubmit = async e => {
   const app = {
     ref:`EP-${yr}-${uniq}`, created:new Date().toISOString(), status:'Baru',
     pejabat:'', nama:fd.get('nama').trim(), kppn:fd.get('kppn').trim(), mgp:fd.get('mgp').trim(),
-    persatuan:fd.get('persatuan').trim(), telefon:fd.get('telefon').trim(), alamat:fd.get('alamat').trim(), emel:fd.get('emel').trim(),
+    persatuan:fd.get('persatuan').trim(), telefon:telValue(), alamat:fd.get('alamat').trim(), emel:fd.get('emel').trim(),
     aktiviti:fd.get('aktiviti'), kategori:fd.get('kategori'), hsk:hskValue(), hskJajahan:hskJajahan(), lokasi:lokasiValue(),
     dari:fd.get('dari'), hingga:fd.get('hingga'), laluanMasuk:fd.get('laluanMasuk').trim(), laluanKeluar:fd.get('laluanKeluar').trim(),
     mgpList, peserta, office:{permitNo:'',fee:'',resit:'',tarikh:'',rujukan:'',ulasan:''}
