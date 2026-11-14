@@ -583,7 +583,8 @@ const total = a => a.mgpList.length + a.peserta.length;
    • Jika halaman ini dihidangkan oleh Apps Script e-Permit (pautan /exec), sambungan adalah automatik.
    • Jika dibuka sebagai fail biasa, isi API_URL dengan URL Web App (/exec) untuk menghantar ke pelayan.
    • Jika kedua-duanya tiada, borang berjalan dalam mod setempat (data dalam pelayar ini sahaja). */
-const API_URL = 'https://script.google.com/macros/s/AKfycbygDzNM4Mrku80d8HJggGS6xX3TEDxVpGMiUnc2xQOkiWhCMxSdnT9c7NlqEk6-CddN/exec';
+// Nota: tulis "\/\/" (bukan dua garis miring) dalam rentetan — Apps Script memotong teks selepas dua garis miring.
+const API_URL = 'https:\/\/script.google.com/macros/s/AKfycbygDzNM4Mrku80d8HJggGS6xX3TEDxVpGMiUnc2xQOkiWhCMxSdnT9c7NlqEk6-CddN/exec';
 const GSR = (typeof google !== 'undefined' && google.script && google.script.run) ? google.script.run : null;
 const ONLINE = !!(GSR || API_URL);
 // Buang data "mod setempat" versi lama yang tidak pernah dihantar ke pelayan (data cubaan / usang).
@@ -913,7 +914,7 @@ async function doSemak(){
     catch(e){ const r=document.createRange(); r.selectNodeContents(b.previousElementSibling); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Tekan Ctrl+C untuk menyalin'); }
   });
 }
-const SERAMBI_URL = 'https://serambipay.kelantan.gov.my/';
+const SERAMBI_URL = 'https:\/\/serambipay.kelantan.gov.my/';
 $('#btnSemak').onclick = doSemak;
 /* Pautan terus ?ref=EP-…: buka Semak Status & semak automatik (cth. selepas dibuka semula dalam Safari untuk mencetak) */
 try {
@@ -1039,8 +1040,8 @@ function cetak(nama, ref){
 /* Pelayar dalam aplikasi: iPhone tanpa token "Safari/" (WKWebView) atau aplikasi yang dikenali / Android WebView ("; wv)") */
 const PELAYAR_APP = (() => { const ua = navigator.userAgent;
   const ios = /iP(hone|ad|od)/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  return /FBAN|FBAV|Instagram|Line\/|MicroMessenger|Snapchat|TikTok|Twitter|; wv\)/i.test(ua) || (ios && !/Safari\//.test(ua)); })();
-const PAUTAN_AWAM = 'https://kelantanecopark.github.io/e-permit/';
+  return /FBAN|FBAV|Instagram|Line\/|MicroMessenger|Snapchat|TikTok|Twitter|; wv\)/i.test(ua) || (ios && !/Safari[/]/.test(ua)); })();
+const PAUTAN_AWAM = 'https:\/\/kelantanecopark.github.io/e-permit/';
 const pautanRef = ref => (/^https?:/.test(location.protocol) && !GSR ? location.origin + location.pathname : PAUTAN_AWAM)
   + (ref ? '?ref=' + encodeURIComponent(ref) : '');
 function bantuanCetak(ref){
