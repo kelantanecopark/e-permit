@@ -945,8 +945,7 @@ function statusCard(a){
         <div class="actions"><button class="btn btn-primary" type="submit">Hantar Pengesahan Bayaran →</button></div>
       </form>`;
   }
-  return `<div class="st-card"><div class="st-head"><div><h3 class="mono">${esc(a.ref)}</h3>
-      <div class="meta">${esc(a.hsk)} · ${esc(a.lokasi)} · ${fmtD(a.dari)} – ${fmtD(a.hingga)} · ${total(a)} orang</div></div>${badge(s)}</div>
+  return `<div class="st-card"><div class="st-head"><div><h3 class="mono">${esc(a.ref)}</h3></div>${badge(s)}</div>
     ${steps}${body}</div>`;
 }
 
