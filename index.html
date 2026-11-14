@@ -326,6 +326,13 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 .pf .stamp{position:absolute;right:8mm;top:52mm;border:3px double #17693c;color:#17693c;padding:4px 12px;font-weight:800;transform:rotate(-8deg);font-size:13pt;letter-spacing:.08em;opacity:.85}
 @page salinan{size:A4 portrait;margin:0}   /* margin 0 = tiada pengepala/pengaki pelayar (URL fail, tarikh) */
 .pf .sal{font-size:9.5pt;page:salinan;padding:0 16mm}
+/* Halaman Lampiran A: A4 LANDSKAP (jadual peserta 8 lajur lebih lega). Chrome/Edge menyokong orientasi berbeza
+   dalam satu cetakan; Safari mencetak semua halaman potret dan kandungan akan menyesuaikan lebar secara automatik. */
+@page salinanL{size:A4 landscape;margin:0}
+.pf .sal.land{page:salinanL;padding:0 14mm}
+.pf .sal.land table.pg>thead td{height:10mm}
+.pf .sal.land table.pg>tfoot td{height:9mm}
+.pf .sal.land .watermark{top:30%}
 .pf .sal table.pg{width:100%;border:0}
 .pf .sal table.pg>*>tr>td{border:0;padding:0}
 .pf .sal table.pg>thead td{height:14mm}
@@ -1037,7 +1044,7 @@ function printSalinan(a){
       : `<p style="margin:3px 0">${a.peserta.length ? '—' : 'Tiada peserta.'}</p>`}`;
   };
   const ringkas = `${a.mgpList.length} MGP + ${a.peserta.length} peserta = ${total(a)} orang`;
-  const page = (inner, wm) => `<section class="page sal"><table class="pg"><thead><tr><td></td></tr></thead><tfoot><tr><td></td></tr></tfoot><tbody><tr><td>
+  const page = (inner, wm, land) => `<section class="page sal${land ? ' land' : ''}"><table class="pg"><thead><tr><td></td></tr></thead><tfoot><tr><td></td></tr></tfoot><tbody><tr><td>
     ${wm ? '<div class="watermark">SALINAN</div>' : ''}${inner}</td></tr></tbody></table></section>`;
   const satu = head + lamp(`<h5>3. Lampiran A — Senarai MGP &amp; Peserta (${ringkas})</h5>`, 0) + perakuan;
   /* Ukur ketinggian pada lebar SEMPIT (150mm) dan had 235mm: Safari iPhone menambah jidar & pengepala/pengaki sendiri,
@@ -1060,7 +1067,7 @@ function printSalinan(a){
           `<div class="t2" style="margin:0 0 4px">No. Rujukan Permohonan: <b>${esc(a.ref)}</b></div>`
           + lamp(`<h5 style="margin-top:4px">3. Lampiran A — Senarai MGP &amp; Peserta${kumpulan > 1 ? ` (Kumpulan ${g+1} daripada ${kumpulan})` : ''}</h5>
                   <div class="nota" style="margin:0 0 4px">${ringkas}</div>`, g)
-          + (g === kumpulan - 1 ? perakuan : ''), true)).join('');
+          + (g === kumpulan - 1 ? perakuan : ''), true, true)).join('');   // halaman Lampiran A: landskap
   cetak('Salinan-Permohonan-' + a.ref);
 }
 function printPermit(a, isAdmin, salinan){
