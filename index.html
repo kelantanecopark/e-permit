@@ -985,7 +985,7 @@ function statusCard(a){
           <div class="field"><label>Tarikh Bayaran <span class="req">*</span></label><input class="input" type="date" name="tarikh" required max="${today()}"></div>
           <div class="field"><label>Jumlah Dibayar (RM) <span class="req">*</span></label><input class="input" type="number" min="0" step="0.01" name="jumlah" required value="${esc(fee)}"></div>
           <div class="field"><label>Kaedah Bayaran</label><select class="input" name="kaedah">${KAEDAH_BAYAR.map(k=>`<option>${k}</option>`).join('')}</select></div>
-          <div class="field span2"><label>Salinan Resit (gambar atau PDF) <span class="req">*</span></label><input class="input" type="file" name="fail" accept="image/jpeg,image/png,image/webp,application/pdf" required>
+          <div class="field span2"><label>Salinan Resit (JPEG atau PDF) <span class="req">*</span></label><input class="input" type="file" name="fail" accept="image/jpeg,image/png,image/webp,application/pdf" required>
             <div class="hint">Gambar akan dikecilkan secara automatik. PDF maksimum 5 MB.</div></div>
           <div class="field span2"><label>Catatan</label><input class="input" name="catatan" placeholder="Pilihan"></div>
         </div>
