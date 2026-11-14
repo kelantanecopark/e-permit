@@ -300,8 +300,19 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 #printHelp .lnk{display:block;word-break:break-all;background:#f3f7f4;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;margin:4px 0 10px;user-select:all;-webkit-user-select:all}
 #printHelp .row{display:flex;gap:8px;flex-wrap:wrap}
 @media print{#printHelp{display:none!important}}
-@page{size:A4 portrait;margin:14mm 16mm}
-@page lampiran{size:A4 landscape;margin:12mm 12mm}
+/* margin 0 = pelayar tidak menambah pengepala/pengaki (alamat /exec, tarikh, "2/2"); jidar dibuat sendiri dengan
+   table.pg (thead/tfoot berulang di setiap halaman cetakan) + padding sisi */
+@page{size:A4 portrait;margin:0}
+@page lampiran{size:A4 landscape;margin:0}
+.pf .perm{padding:0 16mm}
+.pf .perm.p2{padding:0 12mm}
+.pf .perm table.pg{width:100%;border:0;border-collapse:collapse}
+.pf .perm table.pg>thead>tr>td,.pf .perm table.pg>tfoot>tr>td,.pf .perm table.pg>tbody>tr>td{border:0;padding:0}
+.pf .perm table.pg>thead>tr>td{height:14mm}
+.pf .perm table.pg>tfoot>tr>td{height:12mm}
+.pf .perm.p2 table.pg>thead>tr>td{height:12mm}
+.pf .perm.p2 table.pg>tfoot>tr>td{height:10mm}
+.pf .perm table.pg>tbody>tr>td{height:auto;font-size:inherit}
 @media print{
   body{background:#fff}
   .app,.overlay,.drawer,.toast{display:none!important}
@@ -1174,9 +1185,10 @@ function printPermit(a, isAdmin, salinan){
   const tick = on => `<span class="cb">${on?'✓':''}</span>`;
   const encik = /sdn|bhd|enterprise|trading|resources|plt|syarikat|travel|tours/i.test(a.nama) ? '<s>Encik</s> / Syarikat' : 'Encik / <s>Syarikat</s>';
 
+  const PG0 = '<table class="pg"><thead><tr><td></td></tr></thead><tfoot><tr><td></td></tr></tfoot><tbody><tr><td>', PG1 = '</td></tr></tbody></table>';
   $('#printArea').innerHTML = `
-  <section class="page p1">
-    ${!approved?'<div class="watermark">'+WM+'</div>':''}
+  <section class="page p1 perm">
+    ${!approved?'<div class="watermark">'+WM+'</div>':''}${PG0}
     <table class="state"><tr><td style="width:50%">KERAJAAN NEGERI</td><td>KELANTAN</td></tr></table>
     <div class="t1">AKTA PERHUTANAN NEGARA 1984</div>
     <div class="t2">Borang 6</div>
@@ -1214,11 +1226,11 @@ function printPermit(a, isAdmin, salinan){
         <table style="width:100%;margin-top:14px"><tr><td style="width:40%">Negeri</td><td class="center">KELANTAN</td></tr></table>
       </div>
     </div>
-    <div class="foot">* Potong yang tidak berkenaan</div>
+    <div class="foot">* Potong yang tidak berkenaan</div>${PG1}
   </section>
 
-  <section class="page p2 lamp">
-    ${!approved?'<div class="watermark" style="top:30%">'+WM+'</div>':''}
+  <section class="page p2 lamp perm">
+    ${!approved?'<div class="watermark" style="top:30%">'+WM+'</div>':''}${PG0}
     <div style="text-align:right">LAMPIRAN A</div>
     <h4>SENARAI MALIM GUNUNG PERHUTANAN (MGP) DAN PESERTA BAGI AKTIVITI EKOPELANCONGAN (${a.aktiviti.toUpperCase()})</h4>
     <h4>DI HUTAN SIMPAN KEKAL <u>${esc(a.hsk.toUpperCase())}</u></h4>
@@ -1240,7 +1252,7 @@ function printPermit(a, isAdmin, salinan){
     <table style="width:100%;margin-top:5px"><thead><tr><th style="width:5%">BIL.</th><th style="width:22%">NAMA</th><th style="width:14%">NO. MYKAD/ PASSPORT</th><th>ALAMAT</th><th style="width:11%">NO. TELEFON</th><th style="width:11%">NO. TELEFON WARIS</th></tr></thead>
     <tbody>${pad(a.peserta,7).map((m,i)=>`<tr><td class="center">${i+1}.</td><td>${cell(m?.nama)}</td><td>${cell(m?.ic)}</td><td>${cell(m?.alamat)}</td><td>${cell(m?.tel)}</td><td>${cell(m?.waris)}</td></tr>`).join('')}</tbody></table>
     <div style="font-size:8pt;font-style:italic;margin-top:3px">*Sila tambah lampiran sekiranya ruangan tidak mencukupi<br>*Potong yang tidak berkenaan</div>
-    <div style="font-size:8pt;margin-top:6px">Jumlah: ${a.mgpList.length} MGP + ${a.peserta.length} peserta = <b>${total(a)} orang</b> · No. Rujukan Permohonan: ${a.ref}</div>
+    <div style="font-size:8pt;margin-top:6px">Jumlah: ${a.mgpList.length} MGP + ${a.peserta.length} peserta = <b>${total(a)} orang</b> · No. Rujukan Permohonan: ${a.ref}</div>${PG1}
   </section>`;
   if(!approved && !isAdmin && !salinan) return toast('Permit hanya boleh dicetak selepas bayaran disahkan');
   cetak((salinan ? 'Salinan-Permohonan-' : 'Permit-') + a.ref, a.ref);
