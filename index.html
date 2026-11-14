@@ -291,6 +291,15 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 
 /* ================= PRINT (Borang 6 + Lampiran A) ================= */
 #printArea{display:none}
+/* Panel bantuan apabila cetakan tidak disokong (pelayar dalam aplikasi pengimbas QR, Facebook, WhatsApp, dll.) */
+#printHelp{position:fixed;left:12px;right:12px;bottom:12px;max-width:560px;margin:0 auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 34px rgba(0,0,0,.2);padding:16px 18px;z-index:9999;font-size:14px;color:var(--ink)}
+#printHelp h4{margin:0 0 6px;font-size:15.5px}
+#printHelp p{margin:0 0 6px;color:var(--muted)}
+#printHelp ol{margin:4px 0 8px 18px;padding:0}
+#printHelp li{margin:3px 0}
+#printHelp .lnk{display:block;word-break:break-all;background:#f3f7f4;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;margin:4px 0 10px;user-select:all;-webkit-user-select:all}
+#printHelp .row{display:flex;gap:8px;flex-wrap:wrap}
+@media print{#printHelp{display:none!important}}
 @page{size:A4 portrait;margin:14mm 16mm}
 @page lampiran{size:A4 landscape;margin:12mm 12mm}
 @media print{
@@ -898,6 +907,7 @@ async function doSemak(){
   if(!res.length){ out.innerHTML = `<div class="empty">Tiada permohonan ditemui. Semak No. Rujukan anda.</div>`; return; }
   out.innerHTML = res.map(statusCard).join('');
   $$('[data-print]',out).forEach(b=>b.onclick=()=>printPermit(cache.get(b.dataset.print)));  $$('form[data-pay]',out).forEach(f=>f.onsubmit=submitPay);
+  $$('[data-salinan]',out).forEach(b=>b.onclick=()=>{ try { printSalinan(cache.get(b.dataset.salinan)); } catch(e){ toast('Ralat menjana salinan: ' + (e.message || e)); } });
   $$('[data-copy]',out).forEach(b=>b.onclick=async()=>{
     try{ await navigator.clipboard.writeText(b.dataset.copy); toast('No. rujukan pra pembayaran disalin'); }
     catch(e){ const r=document.createRange(); r.selectNodeContents(b.previousElementSibling); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Tekan Ctrl+C untuk menyalin'); }
@@ -905,6 +915,12 @@ async function doSemak(){
 }
 const SERAMBI_URL = 'https://serambipay.kelantan.gov.my/';
 $('#btnSemak').onclick = doSemak;
+/* Pautan terus ?ref=EP-…: buka Semak Status & semak automatik (cth. selepas dibuka semula dalam Safari untuk mencetak) */
+try {
+  const qref = new URLSearchParams(location.search).get('ref');
+  if (qref && /^EP-\d{4}-[A-Z0-9]{5,12}$/i.test(qref.trim()))
+    setTimeout(() => { show('semak'); $('#qRef').value = qref.trim().toUpperCase(); doSemak(); });   // selepas skrip selesai dimuatkan
+} catch (e) {}
 
 /* Kad status mengikut langkah SOP */
 const STEP_LBL = ['Permohonan dihantar','Semakan','Kelulusan','Bayaran/Pengesahan','Permit dikeluarkan'];
@@ -946,7 +962,8 @@ function statusCard(a){
       </form>`;
   }
   return `<div class="st-card"><div class="st-head"><div><h3 class="mono">${esc(a.ref)}</h3></div>${badge(s)}</div>
-    ${steps}${body}</div>`;
+    ${steps}${body}
+    <div style="margin-top:12px"><button type="button" class="btn btn-neutral btn-sm" data-salinan="${esc(a.ref)}">🖨 Cetak Salinan Permohonan</button></div></div>`;
 }
 
 /* Salinan resit -> {name, type, data(dataURL)}. Gambar dikecilkan (maks 1600px, JPEG) supaya ringan. */
@@ -1000,12 +1017,48 @@ const pack = list => ({app:'ePermitHSK', versi:1, dieksport:new Date().toISOStri
 const TITLE0 = document.title;
 /* Cetak TERUS dalam sentuhan/klik pengguna. Safari iPhone/iPad menyekat window.print() yang ditangguhkan
    (setTimeout/Promise) tanpa sebarang mesej — jadi jangan tangguhkan panggilan ini. */
-function cetak(nama){
+function cetak(nama, ref){
   document.title = nama;   // nama fail PDF
   const pulih = () => { document.title = TITLE0; window.removeEventListener('afterprint', pulih); };
   window.addEventListener('afterprint', pulih); setTimeout(pulih, 60000);
+  // Kesan sama ada tetingkap cetak benar-benar dibuka. Pelayar dalam aplikasi (WKWebView/WebView — cth. aplikasi
+  // pengimbas QR, Facebook, WhatsApp) mengabaikan window.print() tanpa sebarang ralat: tiada 'beforeprint'.
+  let dibuka = false;
+  const tanda = () => { dibuka = true; };
+  const mq = window.matchMedia ? window.matchMedia('print') : null, mqf = e => { if (e.matches) dibuka = true; };
+  window.addEventListener('beforeprint', tanda);
+  if (mq && mq.addEventListener) mq.addEventListener('change', mqf);
   try { window.print(); }
   catch (e) { pulih(); toast('Tidak dapat membuka cetakan: ' + (e.message || e)); }
+  setTimeout(() => {
+    window.removeEventListener('beforeprint', tanda);
+    if (mq && mq.removeEventListener) mq.removeEventListener('change', mqf);
+    if (!dibuka) { pulih(); bantuanCetak(ref); }
+  }, 1500);
+}
+/* Pelayar dalam aplikasi: iPhone tanpa token "Safari/" (WKWebView) atau aplikasi yang dikenali / Android WebView ("; wv)") */
+const PELAYAR_APP = (() => { const ua = navigator.userAgent;
+  const ios = /iP(hone|ad|od)/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  return /FBAN|FBAV|Instagram|Line\/|MicroMessenger|Snapchat|TikTok|Twitter|; wv\)/i.test(ua) || (ios && !/Safari\//.test(ua)); })();
+const PAUTAN_AWAM = 'https://kelantanecopark.github.io/e-permit/';
+const pautanRef = ref => (/^https?:/.test(location.protocol) && !GSR ? location.origin + location.pathname : PAUTAN_AWAM)
+  + (ref ? '?ref=' + encodeURIComponent(ref) : '');
+function bantuanCetak(ref){
+  const url = pautanRef(ref);
+  let el = $('#printHelp'); if (!el){ el = document.createElement('div'); el.id = 'printHelp'; document.body.appendChild(el); }
+  el.innerHTML = `<h4>🖨 Tetingkap cetak tidak muncul?</h4>
+    <p>${PELAYAR_APP ? 'Halaman ini dibuka dalam pelayar <b>aplikasi</b> (cth. aplikasi pengimbas QR) yang tidak menyokong cetakan.'
+                     : 'Pelayar ini mungkin tidak menyokong cetakan.'} Sila buka dalam <b>Safari</b> atau <b>Chrome</b>:</p>
+    <ol><li>Tekan ikon <b>⋯</b> atau <b>Kongsi</b> pada skrin, kemudian pilih <b>Buka dalam Safari / Pelayar</b>; atau</li>
+      <li>Salin pautan di bawah dan tampal dalam Safari${ref ? ' — salinan permohonan anda akan dipaparkan untuk dicetak' : ''}.</li></ol>
+    <span class="lnk">${esc(url)}</span>
+    <div class="row"><button type="button" class="btn btn-primary btn-sm" data-h="salin">⧉ Salin pautan</button>
+      <button type="button" class="btn btn-neutral btn-sm" data-h="tutup">Tutup</button></div>`;
+  $('[data-h=tutup]', el).onclick = () => el.remove();
+  $('[data-h=salin]', el).onclick = async () => {
+    try { await navigator.clipboard.writeText(url); toast('Pautan disalin. Buka Safari dan tampal pautan.'); }
+    catch (e) { const r = document.createRange(); r.selectNodeContents($('.lnk', el)); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast('Tekan lama pada pautan untuk menyalin.'); }
+  };
 }
 /* Salinan borang permohonan (bukan permit) — maklumat seperti yang diisi pemohon */
 function printSalinan(a){
@@ -1079,7 +1132,7 @@ function printSalinan(a){
           `<div class="t2" style="margin:0 0 4px">No. Rujukan Permohonan: <b>${esc(a.ref)}</b></div>`
           + lamp(`<h5 style="margin-top:4px">3. Lampiran A — Senarai MGP &amp; Peserta${kumpulan > 1 ? ` (Kumpulan ${g+1} daripada ${kumpulan})` : ''}</h5>`, g)
           + (g === kumpulan - 1 ? perakuan : ''), true, true)).join('');   // halaman Lampiran A: landskap
-  cetak('Salinan-Permohonan-' + a.ref);
+  cetak('Salinan-Permohonan-' + a.ref, a.ref);
 }
 function printPermit(a, isAdmin, salinan){
   const o = a.office || {};
@@ -1161,7 +1214,7 @@ function printPermit(a, isAdmin, salinan){
     <div style="font-size:8pt;margin-top:6px">Jumlah: ${a.mgpList.length} MGP + ${a.peserta.length} peserta = <b>${total(a)} orang</b> · No. Rujukan Permohonan: ${a.ref}</div>
   </section>`;
   if(!approved && !isAdmin && !salinan) return toast('Permit hanya boleh dicetak selepas bayaran disahkan');
-  cetak((salinan ? 'Salinan-Permohonan-' : 'Permit-') + a.ref);
+  cetak((salinan ? 'Salinan-Permohonan-' : 'Permit-') + a.ref, a.ref);
 }
 
 })();
