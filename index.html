@@ -773,6 +773,16 @@ form.kppn.addEventListener('input', () => {
   if ($('#mgpSama').checked) syncMgpSama();
 });
 
+/* ---------- NO. MGP: FORMAT AUTOMATIK MGP-0123 (mgp0123, MGP 0123, MGP/0123 -> MGP-0123) ---------- */
+const fmtMGP = v => String(v || '').toUpperCase().replace(/^MGP[\s\-\/_.]*(?=\d)/, 'MGP-');
+form.addEventListener('input', e => {
+  const el = e.target; if (!el.matches || !el.matches('[name=mgp],[data-k=mgp]')) return;
+  const before = el.value, out = fmtMGP(before); if (out === before) return;
+  const pos = (el.selectionStart ?? before.length) + (out.length - before.length);
+  el.value = out; try { el.setSelectionRange(pos, pos); } catch (_) {}
+  if (el.name === 'mgp' && $('#mgpSama').checked) syncMgpSama();
+});
+
 /* ---------- NO. TELEFON PEMOHON: KOD NEGARA ---------- */
 const telCC = $('#telCC');
 telCC.innerHTML = CC_OPTS;
