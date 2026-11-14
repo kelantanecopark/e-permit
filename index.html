@@ -300,19 +300,8 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 #printHelp .lnk{display:block;word-break:break-all;background:#f3f7f4;border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12.5px;margin:4px 0 10px;user-select:all;-webkit-user-select:all}
 #printHelp .row{display:flex;gap:8px;flex-wrap:wrap}
 @media print{#printHelp{display:none!important}}
-/* margin 0 = pelayar tidak menambah pengepala/pengaki (alamat /exec, tarikh, "2/2"); jidar dibuat sendiri dengan
-   table.pg (thead/tfoot berulang di setiap halaman cetakan) + padding sisi */
-@page{size:A4 portrait;margin:0}
-@page lampiran{size:A4 landscape;margin:0}
-.pf .perm{padding:0 16mm}
-.pf .perm.p2{padding:0 12mm}
-.pf .perm table.pg{width:100%;border:0;border-collapse:collapse}
-.pf .perm table.pg>thead>tr>td,.pf .perm table.pg>tfoot>tr>td,.pf .perm table.pg>tbody>tr>td{border:0;padding:0}
-.pf .perm table.pg>thead>tr>td{height:14mm}
-.pf .perm table.pg>tfoot>tr>td{height:12mm}
-.pf .perm.p2 table.pg>thead>tr>td{height:12mm}
-.pf .perm.p2 table.pg>tfoot>tr>td{height:10mm}
-.pf .perm table.pg>tbody>tr>td{height:auto;font-size:inherit}
+@page{size:A4 portrait;margin:14mm 16mm}
+@page lampiran{size:A4 landscape;margin:12mm 12mm}
 @media print{
   body{background:#fff}
   .app,.overlay,.drawer,.toast{display:none!important}
@@ -559,7 +548,7 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 </section>
 
 </main>
-<footer class="site">© 2026 Jabatan Perhutanan Negeri Kelantan · <span id="footMode" style="color:#b42318;font-weight:700">⚠ Borang ini TIDAK disambungkan ke pelayan — permohonan tidak boleh dihantar.</span></footer>
+<footer class="site">© 2026 Jabatan Perhutanan Negeri Kelantan · Hak cipta Unit Ekopark dan Hutan Taman Negeri.</footer>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -569,13 +558,9 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 
 <script>
 (() => {
-const KEY = 'ePermitHSK_v1';
-const ADMIN_PASS = 'jpnk2026';
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => [...r.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } };
-const save = d => localStorage.setItem(KEY, JSON.stringify(d));
 const fmtD = d => { if(!d) return ''; const [y,m,dd] = d.split('-'); return `${dd}/${m}/${y}`; };
 const today = () => new Date().toISOString().slice(0,10);
 const toast = (msg) => { const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2800); };
@@ -591,15 +576,13 @@ const badge = s => { const x = ST[normSt(s)] || {l:s, c:'b-baru'}; return `<span
 const total = a => a.mgpList.length + a.peserta.length;
 
 /* ---------- SAMBUNGAN PELAYAN (Google Apps Script + Google Sheets) ----------
-   • Jika halaman ini dihidangkan oleh Apps Script e-Permit (pautan /exec), sambungan adalah automatik.
-   • Jika dibuka sebagai fail biasa, isi API_URL dengan URL Web App (/exec) untuk menghantar ke pelayan.
-   • Jika kedua-duanya tiada, borang berjalan dalam mod setempat (data dalam pelayar ini sahaja). */
+   • Jika halaman ini dihidangkan oleh Apps Script e-Permit (pautan /exec): google.script.run (automatik).
+   • Selain itu (GitHub Pages / fail): POST ke API_URL (Web App /exec). Semua data disimpan di pelayan sahaja. */
 // Nota: tulis "\/\/" (bukan dua garis miring) dalam rentetan — Apps Script memotong teks selepas dua garis miring.
 const API_URL = 'https:\/\/script.google.com/macros/s/AKfycbygDzNM4Mrku80d8HJggGS6xX3TEDxVpGMiUnc2xQOkiWhCMxSdnT9c7NlqEk6-CddN/exec';
 const GSR = (typeof google !== 'undefined' && google.script && google.script.run) ? google.script.run : null;
-const ONLINE = !!(GSR || API_URL);
-// Buang data "mod setempat" versi lama yang tidak pernah dihantar ke pelayan (data cubaan / usang).
-if (ONLINE) { try { localStorage.removeItem(KEY); } catch (e) {} }
+// Buang data "mod setempat" versi lama yang mungkin masih tertinggal dalam pelayar pengguna.
+try { localStorage.removeItem('ePermitHSK_v1'); } catch (e) {}
 async function api(payload){
   if (GSR) return JSON.parse(await new Promise((ok, fail) => GSR.withSuccessHandler(ok).withFailureHandler(fail).api(JSON.stringify(payload))));
   const r = await fetch(API_URL, {method:'POST', body:JSON.stringify(payload)});   // text/plain: tiada preflight CORS
@@ -884,7 +867,6 @@ form.onsubmit = async e => {
   if(peserta.length > mgpList.length * NISBAH){ ratioAlert(); return toast(`Nisbah 1 MGP : ${NISBAH} peserta — ${peserta.length} peserta memerlukan sekurang-kurangnya ${Math.ceil(peserta.length/NISBAH)} MGP`); }
   if(!$('#perakuan').checked) return toast('Sila tandakan perakuan pemohon');
 
-  const data = load();
   const yr = new Date().getFullYear();
   // No. rujukan unik walaupun dijana pada peranti berbeza (cth. EP-2026-K7Q2M9X)
   // No. Rujukan ialah satu-satunya kunci Semak Status: 8 aksara rawak kriptografi (32^8 ≈ 1 trilion kemungkinan),
@@ -900,20 +882,15 @@ form.onsubmit = async e => {
     dari:fd.get('dari'), hingga:fd.get('hingga'), laluanMasuk:fd.get('laluanMasuk').trim(), laluanKeluar:fd.get('laluanKeluar').trim(),
     mgpList, peserta, office:{permitNo:'',fee:'',resit:'',tarikh:'',rujukan:'',ulasan:''}
   };
-  if (ONLINE){
-    const btn = form.querySelector('[type=submit]'), label = btn.textContent;
-    btn.disabled = true; btn.textContent = 'Menghantar…';
-    try{
-      const r = await api({action:'submit', app});
-      if (!r.ok) throw new Error(r.error || 'Ralat pelayan');
-      app.created = r.created || app.created;
-    }catch(err){ toast('Gagal menghantar: ' + (err.message || err)); return; }
-    finally{ btn.disabled = false; btn.textContent = label; }
-    cache.set(app.ref, app);
-  } else {   // tiada sambungan pelayan: jangan simpan secara setempat & jangan paparkan "berjaya"
-    alert('Borang ini tidak disambungkan ke pelayan e-Permit.\n\nPermohonan anda TIDAK dihantar. Sila hubungi Jabatan Perhutanan Negeri Kelantan untuk pautan borang yang betul.');
-    return;
-  }
+  const btn = form.querySelector('[type=submit]'), label = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Menghantar…';
+  try{
+    const r = await api({action:'submit', app});
+    if (!r.ok) throw new Error(r.error || 'Ralat pelayan');
+    app.created = r.created || app.created;
+  }catch(err){ toast('Gagal menghantar: ' + (err.message || err)); return; }
+  finally{ btn.disabled = false; btn.textContent = label; }
+  cache.set(app.ref, app);
   lastApp = app;
   $('#refOut').textContent = app.ref;
   form.style.display='none'; $('#successCard').style.display='';
@@ -925,31 +902,21 @@ $('#dlSalinan').onclick = ()=>{
   if(!lastApp) return toast('Tiada permohonan untuk dicetak. Sila semak status menggunakan No. Rujukan.');
   try { printSalinan(lastApp); } catch(e){ toast('Ralat menjana salinan: ' + (e.message || e)); }
 };
-if (ONLINE){
-  $('#footMode').textContent = 'Hak cipta Unit Ekopark dan Hutan Taman Negeri.'; $('#footMode').removeAttribute('style');
-}
 
 /* ---------- SEMAK STATUS ---------- */
 async function doSemak(){
   const ref = $('#qRef').value.trim().toUpperCase().replace(/\s+/g,'');
   const out = $('#semakOut');
   if(!ref){ out.innerHTML = '<div class="empty">Sila masukkan No. Rujukan permohonan.</div>'; return; }
-  let res;
-  if (ONLINE){
-    out.innerHTML = '<div class="empty">Menyemak…</div>';
-    try{
-      const r = await api({action:'status', ref});
-      if(!r.ok){ out.innerHTML = `<div class="empty">${esc(r.error)}</div>`; return; }
-      res = [r.app]; cache.set(r.app.ref, r.app);
-    }catch(err){ out.innerHTML = `<div class="empty">Gagal menghubungi pelayan: ${esc(err.message || err)}</div>`; return; }
-  } else {
-    res = load().filter(a => a.ref.toUpperCase()===ref);
-    res.forEach(a => cache.set(a.ref, a));
-  }
-  if(!res.length){ out.innerHTML = `<div class="empty">Tiada permohonan ditemui. Semak No. Rujukan anda.</div>`; return; }
-  out.innerHTML = res.map(statusCard).join('');
+  out.innerHTML = '<div class="empty">Menyemak…</div>';
+  let app;
+  try{
+    const r = await api({action:'status', ref});
+    if(!r.ok){ out.innerHTML = `<div class="empty">${esc(r.error)}</div>`; return; }
+    app = r.app; cache.set(app.ref, app);
+  }catch(err){ out.innerHTML = `<div class="empty">Gagal menghubungi pelayan: ${esc(err.message || err)}</div>`; return; }
+  out.innerHTML = statusCard(app);
   $$('[data-print]',out).forEach(b=>b.onclick=()=>printPermit(cache.get(b.dataset.print)));  $$('form[data-pay]',out).forEach(f=>f.onsubmit=submitPay);
-  $$('[data-salinan]',out).forEach(b=>b.onclick=()=>{ try { printSalinan(cache.get(b.dataset.salinan)); } catch(e){ toast('Ralat menjana salinan: ' + (e.message || e)); } });
   $$('[data-copy]',out).forEach(b=>b.onclick=async()=>{
     try{ await navigator.clipboard.writeText(b.dataset.copy); toast('No. rujukan pra pembayaran disalin'); }
     catch(e){ const r=document.createRange(); r.selectNodeContents(b.previousElementSibling); const s=getSelection(); s.removeAllRanges(); s.addRange(r); toast('Tekan Ctrl+C untuk menyalin'); }
@@ -1034,25 +1001,14 @@ async function submitPay(e){
   btn.disabled = true; const label = btn.textContent; btn.textContent = 'Menghantar…';
   try{
     const file = await readResit(f.fail.files[0]);
-    if (ONLINE){
-      const r = await api({action:'pay', ref, payment, file});
-      if(!r.ok) throw new Error(r.error || 'Ralat pelayan');
-    } else {
-      if(file.data.length > 2500000) throw new Error('Fail terlalu besar untuk mod setempat (maks ~1.8 MB)');
-      const d = load(), i = d.findIndex(x=>x.ref===ref);
-      if(i < 0 || !['Lulus','BayaranTidakSah'].includes(normSt(d[i].status))) throw new Error('Permohonan ini tidak menunggu bayaran');
-      d[i].status = 'Bayaran'; d[i].payment = {...payment, fileName:file.name, fileType:file.type, fileData:file.data, dihantar:new Date().toISOString()};
-      try{ save(d); }catch(x){ throw new Error('Storan pelayar penuh'); }
-    }
+    const r = await api({action:'pay', ref, payment, file});
+    if(!r.ok) throw new Error(r.error || 'Ralat pelayan');
     toast('Pengesahan bayaran dihantar. Terima kasih.');
     $('#qRef').value = ref; doSemak();
   }catch(err){ toast('Gagal: ' + (err.message || err)); btn.disabled = false; btn.textContent = label; }
 }
 $('#qRef').onkeydown = e=>{ if(e.key==='Enter') doSemak(); };
 
-/* ---------- PEGAWAI: EKSPORT FAIL PERMOHONAN ---------- */
-const dl = (obj, name) => { const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(obj,null,1)],{type:'application/json'})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); };
-const pack = list => ({app:'ePermitHSK', versi:1, dieksport:new Date().toISOString(), permohonan:list});
 /* ---------- PRINT: BORANG 6 + LAMPIRAN A ---------- */
 const TITLE0 = document.title;
 /* Cetak TERUS dalam sentuhan/klik pengguna. Safari iPhone/iPad menyekat window.print() yang ditangguhkan
@@ -1185,10 +1141,9 @@ function printPermit(a, isAdmin, salinan){
   const tick = on => `<span class="cb">${on?'✓':''}</span>`;
   const encik = /sdn|bhd|enterprise|trading|resources|plt|syarikat|travel|tours/i.test(a.nama) ? '<s>Encik</s> / Syarikat' : 'Encik / <s>Syarikat</s>';
 
-  const PG0 = '<table class="pg"><thead><tr><td></td></tr></thead><tfoot><tr><td></td></tr></tfoot><tbody><tr><td>', PG1 = '</td></tr></tbody></table>';
   $('#printArea').innerHTML = `
-  <section class="page p1 perm">
-    ${!approved?'<div class="watermark">'+WM+'</div>':''}${PG0}
+  <section class="page p1">
+    ${!approved?'<div class="watermark">'+WM+'</div>':''}
     <table class="state"><tr><td style="width:50%">KERAJAAN NEGERI</td><td>KELANTAN</td></tr></table>
     <div class="t1">AKTA PERHUTANAN NEGARA 1984</div>
     <div class="t2">Borang 6</div>
@@ -1226,11 +1181,11 @@ function printPermit(a, isAdmin, salinan){
         <table style="width:100%;margin-top:14px"><tr><td style="width:40%">Negeri</td><td class="center">KELANTAN</td></tr></table>
       </div>
     </div>
-    <div class="foot">* Potong yang tidak berkenaan</div>${PG1}
+    <div class="foot">* Potong yang tidak berkenaan</div>
   </section>
 
-  <section class="page p2 lamp perm">
-    ${!approved?'<div class="watermark" style="top:30%">'+WM+'</div>':''}${PG0}
+  <section class="page p2 lamp">
+    ${!approved?'<div class="watermark" style="top:30%">'+WM+'</div>':''}
     <div style="text-align:right">LAMPIRAN A</div>
     <h4>SENARAI MALIM GUNUNG PERHUTANAN (MGP) DAN PESERTA BAGI AKTIVITI EKOPELANCONGAN (${a.aktiviti.toUpperCase()})</h4>
     <h4>DI HUTAN SIMPAN KEKAL <u>${esc(a.hsk.toUpperCase())}</u></h4>
@@ -1252,7 +1207,7 @@ function printPermit(a, isAdmin, salinan){
     <table style="width:100%;margin-top:5px"><thead><tr><th style="width:5%">BIL.</th><th style="width:22%">NAMA</th><th style="width:14%">NO. MYKAD/ PASSPORT</th><th>ALAMAT</th><th style="width:11%">NO. TELEFON</th><th style="width:11%">NO. TELEFON WARIS</th></tr></thead>
     <tbody>${pad(a.peserta,7).map((m,i)=>`<tr><td class="center">${i+1}.</td><td>${cell(m?.nama)}</td><td>${cell(m?.ic)}</td><td>${cell(m?.alamat)}</td><td>${cell(m?.tel)}</td><td>${cell(m?.waris)}</td></tr>`).join('')}</tbody></table>
     <div style="font-size:8pt;font-style:italic;margin-top:3px">*Sila tambah lampiran sekiranya ruangan tidak mencukupi<br>*Potong yang tidak berkenaan</div>
-    <div style="font-size:8pt;margin-top:6px">Jumlah: ${a.mgpList.length} MGP + ${a.peserta.length} peserta = <b>${total(a)} orang</b> · No. Rujukan Permohonan: ${a.ref}</div>${PG1}
+    <div style="font-size:8pt;margin-top:6px">Jumlah: ${a.mgpList.length} MGP + ${a.peserta.length} peserta = <b>${total(a)} orang</b> · No. Rujukan Permohonan: ${a.ref}</div>
   </section>`;
   if(!approved && !isAdmin && !salinan) return toast('Permit hanya boleh dicetak selepas bayaran disahkan');
   cetak((salinan ? 'Salinan-Permohonan-' : 'Permit-') + a.ref, a.ref);
