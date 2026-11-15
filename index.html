@@ -294,7 +294,14 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
   .nav{display:grid;grid-template-columns:1fr 1fr;gap:4px;border-radius:18px;overflow:visible}
   .nav button{padding:9px 8px;font-size:13px;gap:6px;justify-content:center;border-radius:14px}
   .nav button svg{width:15px;height:15px;flex:none}
+  /* menu di bawah banner: latar terang */
+  .nav-slot{padding:12px 12px 0;max-width:100%}
+  .nav-slot .nav{background:#fff;border:1px solid var(--line);box-shadow:0 6px 18px rgba(14,59,44,.08);padding:5px}
+  .nav-slot .nav button{color:var(--forest);font-weight:600}
+  .nav-slot .nav button:hover{background:var(--mint)}
+  .nav-slot .nav button.active{background:var(--forest);color:#fff;box-shadow:0 4px 10px rgba(14,59,44,.25)}
 }
+.nav-slot:empty{display:none}
 
 /* ================= PRINT (Borang 6 + Lampiran A) ================= */
 #printArea{display:none}
@@ -478,6 +485,8 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
     </div>
   </div>
 </section>
+<!-- Telefon: menu atas dipindah ke sini (di bawah banner) -->
+<div class="nav-slot" id="navSlot"></div>
 
 <main>
 <!-- ================= VIEW: PEMOHON ================= -->
@@ -761,6 +770,11 @@ function show(v){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 $$('.nav button').forEach(b=>b.onclick=()=>show(b.dataset.view));
+/* Telefon (≤560px): menu dipindah ke bawah banner; skrin lebih besar: kekal di bar atas */
+(() => { const nav = $('.nav'), asal = nav.parentNode, slot = $('#navSlot'), mq = matchMedia('(max-width:560px)');
+  const letak = () => { if (mq.matches){ if (nav.parentNode !== slot) slot.appendChild(nav); } else if (nav.parentNode !== asal) asal.appendChild(nav); };
+  if (mq.addEventListener) mq.addEventListener('change', letak); else mq.addListener(letak);
+  letak(); })();
 const SUBTITLE = {
   mohon:$('#bSub').innerHTML,
   semak:'',
