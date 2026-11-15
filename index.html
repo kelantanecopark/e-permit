@@ -289,9 +289,11 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
   .icon-btn{width:40px;height:40px}
   .tbl-foot .btn{flex:1 1 auto}
 }
-/* Telefon kecil: 3 menu atas muat sepenuhnya tanpa terpotong */
-@media(max-width:420px){
-  .nav{gap:2px}.nav button{padding:10px 8px;font-size:12.5px;gap:5px}.nav button svg{width:14px;height:14px}
+/* Telefon: 4 menu atas disusun 2 × 2, semua kelihatan tanpa skrol atau terpotong */
+@media(max-width:560px){
+  .nav{display:grid;grid-template-columns:1fr 1fr;gap:4px;border-radius:18px;overflow:visible}
+  .nav button{padding:9px 8px;font-size:13px;gap:6px;justify-content:center;border-radius:14px}
+  .nav button svg{width:15px;height:15px;flex:none}
 }
 
 /* ================= PRINT (Borang 6 + Lampiran A) ================= */
@@ -340,6 +342,15 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 @keyframes capTick{from{opacity:0;transform:rotate(45deg) translate(-2px,-2px) scale(.3)}to{opacity:1}}
 @keyframes capShake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 @media(max-width:600px){.ad-hero{flex-direction:column}.cap{max-width:none}}
+/* Hubungi Kami */
+.hub{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.hub li{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:#fbfcfb}
+.hub-ico{flex:none;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--leaf),var(--forest))}
+.hub li>div{min-width:0;display:flex;flex-direction:column;gap:3px;padding-top:2px}
+.hub b{font-size:13px;color:var(--forest);text-transform:uppercase;letter-spacing:.04em}
+.hub span{font-size:15px;line-height:1.5;color:var(--ink);overflow-wrap:anywhere}
+.hub a{color:inherit;font-weight:600;text-decoration:none;border-bottom:1px dashed currentColor;white-space:nowrap}
+.hub a:hover{color:var(--leaf)}
 @page{size:A4 portrait;margin:14mm 16mm}
 @page lampiran{size:A4 landscape;margin:12mm 12mm}
 @media print{
@@ -432,6 +443,8 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>Semak Status</button>
       <button data-view="aduan">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M12 7v4M12 14h.01"/></svg>Aduan</button>
+      <button data-view="hubungi">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>Hubungi Kami</button>
     </nav>
   </div>
 </header>
@@ -674,6 +687,23 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
   </div></div>
 </section>
 
+<!-- ================= VIEW: HUBUNGI KAMI ================= -->
+<section class="view" id="view-hubungi">
+  <div class="card">
+    <div class="card-head"><div class="step"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></div><div><h2>HUBUNGI KAMI</h2></div></div>
+    <div class="card-body">
+      <ul class="hub">
+        <li><span class="hub-ico"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+          <div><b>Alamat</b><span>Jabatan Perhutanan Negeri Kelantan, Blok 5, Tingkat 1, Kompleks Kota Darul Naim, 15503 Kota Bharu, Kelantan</span></div></li>
+        <li><span class="hub-ico"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg></span>
+          <div><b>No. Telefon</b><span><a href="tel:+6097482140">+609-7482 140</a> / <a href="tel:+6097481957">09-7481 957</a></span></div></li>
+        <li><span class="hub-ico"><svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></span>
+          <div><b>No. Faks</b><span>09-7445 675 / 09-7474 328</span></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
 </main>
 <footer class="site">© 2026 Jabatan Perhutanan Negeri Kelantan · Hak cipta Unit Ekopark dan Hutan Taman Negeri.</footer>
 </div>
@@ -729,7 +759,8 @@ $$('.nav button').forEach(b=>b.onclick=()=>show(b.dataset.view));
 const SUBTITLE = {
   mohon:$('#bSub').innerHTML,
   semak:'',
-  aduan:''
+  aduan:'',
+  hubungi:''
 };
 /* Ikon tab pelayar */
 (() => {
@@ -1226,6 +1257,8 @@ adForm.onsubmit = async e => {
 $('#adBaru').onclick = () => { adForm.reset(); adForm.style.display = ''; $('#adSuccess').style.display = 'none'; adReset(); };
 /* Pautan terus ke tab Aduan: …/#aduan atau ?aduan */
 if (location.hash === '#aduan' || new URLSearchParams(location.search).has('aduan')) setTimeout(() => show('aduan'));
+/* Pautan terus ke tab Hubungi Kami: …/#hubungi */
+if (location.hash === '#hubungi') setTimeout(() => show('hubungi'));
 
 /* ---------- PRINT: BORANG 6 + LAMPIRAN A ---------- */
 const TITLE0 = document.title;
