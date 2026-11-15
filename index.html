@@ -183,6 +183,8 @@ table.data td.act{width:44px;text-align:center}
 .btn-white{background:#fff;border-color:#d4d4d4;color:#1f1f1f}.btn-white:hover{background:#f5f5f5}
 .btn-sm{padding:7px 12px;font-size:13px;border-radius:8px}
 .btn-lg{padding:14px 26px;font-size:15.5px}
+.btn-neutral{background:#3f4542;color:#fff}.btn-neutral:hover{background:#2c312f}
+.sb-act{display:flex;gap:10px;margin-left:auto}
 
 .counter{display:flex;gap:10px;flex-wrap:wrap}
 .count-pill{display:flex;align-items:center;gap:8px;background:#f3f7f4;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px;color:#33453b}
@@ -267,7 +269,7 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
   .toolbar .input{min-width:0;flex:1 1 100%}
   .nav button{padding:10px 14px}
   .btn{min-height:44px;justify-content:center}
-  .submit-bar{padding:14px 16px}.submit-bar .btn{flex:1 1 100%}
+  .submit-bar{padding:14px 16px}.sb-act{width:100%;justify-content:space-between}
   .pay-form .actions .btn,.success .btn{width:100%}
   .st-card{padding:14px}
   .steps{margin:16px -6px 10px;grid-template-columns:repeat(5,minmax(0,1fr))}.steps li{padding:32px 2px 0;font-size:10.5px;overflow-wrap:normal;word-break:normal;hyphens:none}
@@ -583,9 +585,9 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
       </div>
       <div class="submit-bar">
         <span style="color:var(--muted);font-size:13px"><span style="color:var(--red)">*</span> Sila lengkapkan ruangan ini.</span>
-        <div style="display:flex;gap:10px">
+        <div class="sb-act">
           <button type="reset" class="btn btn-ghost">Padam</button>
-          <button type="submit" class="btn btn-primary btn-lg">Hantar →</button>
+          <button type="submit" class="btn btn-neutral btn-lg">Hantar →</button>
         </div>
       </div>
     </div>
@@ -683,9 +685,9 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
       </div>
       <div class="submit-bar">
         <span style="color:var(--muted);font-size:13px"><span style="color:var(--red)">*</span> Sila lengkapkan ruangan ini.</span>
-        <div style="display:flex;gap:10px">
+        <div class="sb-act">
           <button type="reset" class="btn btn-ghost">Padam</button>
-          <button type="submit" class="btn btn-primary btn-lg" id="adHantar">Hantar Aduan →</button>
+          <button type="submit" class="btn btn-neutral btn-lg" id="adHantar">Hantar Aduan →</button>
         </div>
       </div>
     </div>
