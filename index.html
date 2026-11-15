@@ -324,32 +324,12 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 .ad-count{text-align:right}
 .ad-count.ok{color:var(--leaf)}
 .ad-hp{position:absolute!important;left:-9999px!important;width:1px;height:1px;overflow:hidden}
-.cap{display:flex;align-items:center;gap:14px;max-width:380px;padding:12px 14px;border:1px solid #d3ddd7;border-radius:12px;background:#f9fbfa;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:border .2s,box-shadow .2s}
-.cap.err{border-color:var(--red);box-shadow:0 0 0 4px rgba(179,38,30,.1);animation:capShake .35s}
-.cap.ok{border-color:#9fd3b2;background:#f1faf4}
-.cap-box{flex:none;width:30px;height:30px;border:2px solid #9aa9a1;border-radius:6px;background:#fff;cursor:pointer;display:grid;place-items:center;padding:0;transition:.2s}
-.cap-box:hover{border-color:var(--leaf)}
-.cap-box:focus-visible{outline:none;box-shadow:0 0 0 4px rgba(47,143,91,.2)}
-.cap.busy .cap-box{border-color:transparent;border-top-color:var(--leaf);border-right-color:var(--leaf);border-radius:50%;animation:capSpin .8s linear infinite;cursor:default}
-.cap.ok .cap-box{border-color:transparent;background:none;cursor:default}
-.cap-tick{display:none;width:11px;height:20px;border:solid var(--leaf);border-width:0 4px 4px 0;transform:rotate(45deg) translate(-2px,-2px);animation:capTick .35s ease}
-.cap.ok .cap-tick{display:block}
-.cap-txt{flex:1;display:flex;flex-direction:column;line-height:1.25}
-.cap-txt b{font-size:14.5px;font-weight:600;color:var(--ink)}
-.cap-txt small{font-size:11.5px;color:var(--muted)}
-.cap-brand{flex:none;display:flex;flex-direction:column;align-items:center;color:var(--leaf);text-align:center}
-.cap-brand small{font-size:8.5px;line-height:1.15;color:var(--muted);margin-top:2px;letter-spacing:.02em}
-.cap-q{margin-top:12px;max-width:520px;padding:14px;border:1px dashed #b8cbbf;border-radius:12px;background:#fff;animation:fade .3s ease}
-.cap-q p{margin:0 0 10px;font-size:13px;color:#3d5246}
-.cap-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.cap-row canvas{border-radius:8px;border:1px solid var(--line);background:#eef5f0}
-.cap-row .input{width:110px;flex:none;text-align:center;font-size:16px;font-weight:600}
-.cap-new{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:18px;color:var(--forest)}
-.cap-new:hover{background:var(--mint)}
-@keyframes capSpin{to{transform:rotate(360deg)}}
-@keyframes capTick{from{opacity:0;transform:rotate(45deg) translate(-2px,-2px) scale(.3)}to{opacity:1}}
+.rc{display:inline-block;border-radius:6px;min-height:78px;transition:box-shadow .2s}
+.rc.err{box-shadow:0 0 0 4px rgba(179,38,30,.25);animation:capShake .35s}
+.rc-note{display:block;font-size:12.5px;color:var(--muted);margin-top:6px}
+.rc-note.err{color:var(--red)}
 @keyframes capShake{0%,100%{transform:none}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-@media(max-width:600px){.ad-hero{flex-direction:column}.cap{max-width:none}}
+@media(max-width:600px){.ad-hero{flex-direction:column}}
 /* Hubungi Kami */
 .hub{list-style:none;margin:0;padding:0;display:grid;gap:12px}
 .hub li{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:#fbfcfb}
@@ -588,20 +568,8 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
     <div class="card">
       <div class="card-head"><div class="step">5</div><div><h2>PENGESAHAN KESELAMATAN</h2><p>Security Verification</p></div></div>
       <div class="card-body">
-        <div class="cap" id="pcap">
-          <button type="button" class="cap-box" id="pcapBox" role="checkbox" aria-checked="false" aria-label="Saya bukan robot"><span class="cap-tick"></span></button>
-          <div class="cap-txt"><b id="pcapLbl">Saya bukan robot</b><small id="pcapSub">I'm not a robot</small></div>
-          <div class="cap-brand"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></svg><small>Pengesahan<br>Keselamatan</small></div>
-        </div>
-        <div class="cap-q" id="pcapQ" hidden>
-          <p>Sila jawab soalan di bawah untuk meneruskan:</p>
-          <div class="cap-row">
-            <canvas id="pcapCv" width="170" height="52" aria-label="Soalan pengesahan"></canvas>
-            <input class="input" id="pcapIn" inputmode="numeric" maxlength="3" placeholder="Jawapan" autocomplete="off" aria-label="Jawapan soalan pengesahan">
-            <button type="button" class="btn btn-primary" id="pcapOk">Sahkan</button>
-            <button type="button" class="cap-new" id="pcapNew" title="Soalan baharu" aria-label="Soalan baharu">↻</button>
-          </div>
-        </div>
+        <div class="rc" id="pcap"></div>
+        <small class="rc-note" id="pcapNote">Memuatkan Google reCAPTCHA…</small>
       </div>
       <div class="submit-bar">
         <span style="color:var(--muted);font-size:13px"><span style="color:var(--red)">*</span> Sila lengkapkan ruangan ini.</span>
@@ -688,20 +656,8 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
     <div class="card">
       <div class="card-head"><div class="step">3</div><div><h2>PENGESAHAN KESELAMATAN</h2><p>Security Verification</p></div></div>
       <div class="card-body">
-        <div class="cap" id="cap">
-          <button type="button" class="cap-box" id="capBox" role="checkbox" aria-checked="false" aria-label="Saya bukan robot"><span class="cap-tick"></span></button>
-          <div class="cap-txt"><b id="capLbl">Saya bukan robot</b><small id="capSub">I'm not a robot</small></div>
-          <div class="cap-brand"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></svg><small>Pengesahan<br>Keselamatan</small></div>
-        </div>
-        <div class="cap-q" id="capQ" hidden>
-          <p>Sila jawab soalan di bawah untuk meneruskan:</p>
-          <div class="cap-row">
-            <canvas id="capCv" width="170" height="52" aria-label="Soalan pengesahan"></canvas>
-            <input class="input" id="capIn" inputmode="numeric" maxlength="3" placeholder="Jawapan" autocomplete="off" aria-label="Jawapan soalan pengesahan">
-            <button type="button" class="btn btn-primary" id="capOk">Sahkan</button>
-            <button type="button" class="cap-new" id="capNew" title="Soalan baharu" aria-label="Soalan baharu">↻</button>
-          </div>
-        </div>
+        <div class="rc" id="cap"></div>
+        <small class="rc-note" id="capNote">Memuatkan Google reCAPTCHA…</small>
       </div>
       <div class="submit-bar">
         <span style="color:var(--muted);font-size:13px"><span style="color:var(--red)">*</span> Sila lengkapkan ruangan ini.</span>
@@ -1069,7 +1025,7 @@ form.onsubmit = async e => {
   if(!mgpList.length) return toast('Sila masukkan sekurang-kurangnya seorang MGP');
   if(peserta.length > mgpList.length * NISBAH){ ratioAlert(); return toast(`Nisbah 1 MGP : ${NISBAH} peserta — ${peserta.length} peserta memerlukan sekurang-kurangnya ${Math.ceil(peserta.length/NISBAH)} MGP`); }
   if(!$('#perakuan').checked) return toast('Sila tandakan perakuan pemohon');
-  const lulus = PC.sedia(); if(!lulus) return;
+  const recaptcha = PC.sedia(); if(!recaptcha) return;
 
   const yr = new Date().getFullYear();
   // No. rujukan unik walaupun dijana pada peranti berbeza (cth. EP-2026-K7Q2M9X)
@@ -1089,12 +1045,12 @@ form.onsubmit = async e => {
   const btn = form.querySelector('[type=submit]'), label = btn.textContent;
   btn.disabled = true; btn.textContent = 'Menghantar…';
   try{
-    const r = await api({action:'submit', app, lulus, masa:Date.now() - PC.S.mula});
+    const r = await api({action:'submit', app, recaptcha, masa:Date.now() - PC.S.mula});
     if (!r.ok) throw new Error(r.error || 'Ralat pelayan');
     app.created = r.created || app.created;
   }catch(err){
     const m = err.message || String(err); toast('Gagal menghantar: ' + m);
-    if (/Pengesahan Keselamatan/i.test(m)) PC.reset();
+    PC.reset();                                             // token reCAPTCHA sekali guna: minta tanda semula
     return;
   }
   finally{ btn.disabled = false; btn.textContent = label; }
@@ -1218,75 +1174,46 @@ async function submitPay(e){
 }
 $('#qRef').onkeydown = e=>{ if(e.key==='Enter') doSemak(); };
 
-/* ---------- ADUAN PENGGUNA ----------
-   Pengesahan "Saya bukan robot": soalan ringkas daripada pelayan (token bertandatangan; jawapan tidak dihantar ke
-   pelayar) → token lulus sekali guna. Pelayan turut menyemak medan perangkap, masa mengisi & had kekerapan. */
-const adForm = $('#adForm');
-/* Satu kotak "Saya bukan robot" bagi setiap borang (px = awalan id: 'cap' Aduan, 'pcap' Permohonan). */
+/* ---------- PENGESAHAN KESELAMATAN: Google reCAPTCHA v2 ("Saya bukan robot") ----------
+   Satu kotak bagi setiap borang (px = id bekas: 'cap' Aduan, 'pcap' Permohonan). Token reCAPTCHA dihantar bersama
+   borang dan disemak oleh pelayan dengan Google (secret key hanya di pelayan). Token sah 2 minit & sekali guna. */
+const RC_KEY = '6LeOkSEuAAAAABdt6YvXn_cqnxY7-dVuy-YV_y6B';
 function buatCap(px){
-  const el = s => $('#' + px + s), S = {mula: Date.now(), lulus: '', luput: 0, token: ''};
-  const set = (cls, lbl, sub) => {
-    const c = el(''); c.classList.remove('busy', 'ok', 'err'); if (cls) c.classList.add(cls);
-    el('Lbl').textContent = lbl || 'Saya bukan robot'; el('Sub').textContent = sub || "I'm not a robot";
-    el('Box').setAttribute('aria-checked', cls === 'ok' ? 'true' : 'false');
-  };
-  async function cabaran(){
-    set('busy', 'Menyemak…', 'Sila tunggu'); el('In').value = '';
-    try{
-      const r = await api({action:'cabaran'}); if (!r.ok) throw new Error(r.error || 'Ralat pelayan');
-      S.token = r.token; capLukis(el('Cv'), r.soalan);
-      set('', 'Saya bukan robot', 'Jawab soalan di bawah'); el('Q').hidden = false; el('In').focus();
-    }catch(err){ set('err', 'Tidak dapat menyemak', 'Sila cuba semula'); toast('Pengesahan: ' + (err.message || err)); }
-  }
-  async function sahkan(){
-    const jaw = el('In').value.trim();
-    if (!jaw){ el('In').classList.add('invalid'); el('In').focus(); return; }
-    const b = el('Ok'); b.disabled = true;
-    try{
-      const r = await api({action:'sahkanCabaran', token:S.token, jawapan:jaw});
-      if (!r.ok) throw new Error(r.error || 'Ralat pelayan');
-      S.lulus = r.lulus; S.luput = Date.now() + 19*60*1000;
-      el('Q').hidden = true; set('ok', 'Disahkan', 'Verified · sah selama 20 minit');
-    }catch(err){
-      const m = err.message || String(err); el('In').classList.add('invalid'); toast(m);
-      if (/Terlalu banyak|tamat/i.test(m)) cabaran(); else { el('In').select(); }
-    }finally{ b.disabled = false; }
+  const box = $('#' + px), nota = $('#' + px + 'Note'), S = {mula: Date.now(), token: '', w: null};
+  const notaSet = (teks, err) => { nota.textContent = teks || ''; nota.hidden = !teks; nota.classList.toggle('err', !!err); };
+  function render(){
+    if (S.w !== null) return;
+    S.w = grecaptcha.render(box, {sitekey: RC_KEY, size: innerWidth < 400 ? 'compact' : 'normal',
+      callback: t => { S.token = t; box.classList.remove('err'); notaSet(''); },
+      'expired-callback': () => { S.token = ''; notaSet('Pengesahan tamat tempoh. Sila tandakan semula.', true); },
+      'error-callback': () => { S.token = ''; notaSet('Sambungan reCAPTCHA terputus. Semak internet dan cuba semula.', true); }});
+    notaSet('');
   }
   function reset(){
-    S.lulus = ''; S.token = ''; S.luput = 0; S.mula = Date.now();
-    el('Q').hidden = true; el('In').value = ''; set('');
+    S.token = ''; S.mula = Date.now(); notaSet('');
+    if (S.w !== null) try { grecaptcha.reset(S.w); } catch (e) {}
   }
-  /* Token lulus yang masih sah; jika tiada, goncang kotak, tatal ke situ dan beri amaran. */
+  /* Token reCAPTCHA semasa; jika tiada, goncang kotak, tatal ke situ dan beri amaran. */
   function sedia(){
-    if (S.lulus && Date.now() <= S.luput) return S.lulus;
-    if (S.lulus) reset();
-    const c = el(''); c.classList.add('err'); setTimeout(() => c.classList.remove('err'), 600);
-    c.scrollIntoView({block:'center', behavior:'smooth'});
-    toast('Sila lengkapkan Pengesahan Keselamatan — klik "Saya bukan robot".');
+    if (S.token) return S.token;
+    box.classList.add('err'); setTimeout(() => box.classList.remove('err'), 600);
+    box.scrollIntoView({block:'center', behavior:'smooth'});
+    toast(S.w === null ? 'Google reCAPTCHA belum dimuatkan. Semak sambungan internet dan muat semula halaman.'
+                       : 'Sila lengkapkan Pengesahan Keselamatan — tandakan "Saya bukan robot".');
     return '';
   }
-  el('Box').onclick = () => { const c = el(''); if (!c.classList.contains('ok') && !c.classList.contains('busy')) cabaran(); };
-  el('Ok').onclick = sahkan;
-  el('New').onclick = cabaran;
-  el('In').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); sahkan(); } });
-  el('In').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, ''); e.target.classList.remove('invalid'); });
-  return {S, reset, sedia};
+  return {S, render, reset, sedia, notaSet};
 }
-function capLukis(cv, soalan){                              // soalan dilukis pada kanvas (bukan teks biasa)
-  const g = cv.getContext('2d'), W = cv.width, H = cv.height, rnd = (a, b) => a + Math.random() * (b - a);
-  const bg = g.createLinearGradient(0, 0, W, H); bg.addColorStop(0, '#e9f4ec'); bg.addColorStop(1, '#f7fbf8');
-  g.fillStyle = bg; g.fillRect(0, 0, W, H);
-  for (let i = 0; i < 5; i++){ g.strokeStyle = `rgba(14,59,44,${rnd(.12,.28)})`; g.lineWidth = rnd(1, 2);
-    g.beginPath(); g.moveTo(rnd(0, W/3), rnd(0, H)); g.bezierCurveTo(rnd(0, W), rnd(0, H), rnd(0, W), rnd(0, H), rnd(W*.6, W), rnd(0, H)); g.stroke(); }
-  for (let i = 0; i < 40; i++){ g.fillStyle = `rgba(47,143,91,${rnd(.15,.4)})`; g.fillRect(rnd(0, W), rnd(0, H), 1.6, 1.6); }
-  const ch = [...soalan]; let x = 12;
-  ch.forEach(c => { g.save(); g.translate(x, H/2 + rnd(-4, 4)); g.rotate(rnd(-.25, .25));
-    g.font = `700 ${Math.round(rnd(20, 25))}px Georgia, "Times New Roman", serif`; g.fillStyle = `hsl(${Math.round(rnd(140, 165))},55%,${Math.round(rnd(18, 30))}%)`;
-    g.textBaseline = 'middle'; g.fillText(c, 0, 0); g.restore(); x += c === ' ' ? 7 : rnd(13, 16); });
-}
+const adForm = $('#adForm');
 const ADC = buatCap('cap'), AD = ADC.S, adReset = ADC.reset;
 PC = buatCap('pcap');
-adForm.addEventListener('input', e => e.target.classList && e.target.classList.remove('invalid'));
+window.rcSedia = () => { ADC.render(); PC.render(); };
+(() => {
+  const s = document.createElement('script');
+  s.src = 'https:\/\/www.google.com/recaptcha/api.js?onload=rcSedia&render=explicit&hl=ms'; s.async = true; s.defer = true;
+  s.onerror = () => [ADC, PC].forEach(c => c.notaSet('Google reCAPTCHA tidak dapat dimuatkan. Semak sambungan internet dan muat semula halaman.', true));
+  document.head.appendChild(s);
+})();adForm.addEventListener('input', e => e.target.classList && e.target.classList.remove('invalid'));
 adForm.keterangan.addEventListener('input', () => { const n = adForm.keterangan.value.trim().length;
   $('#adCount').textContent = n; $('#adCount').parentElement.classList.toggle('ok', n >= 15); });
 adForm.emel.addEventListener('input', () => { const v = adForm.emel.value.toLowerCase().replace(/\s+/g, ''); if (v !== adForm.emel.value) adForm.emel.value = v; });
@@ -1301,17 +1228,17 @@ adForm.onsubmit = async e => {
   let bad = null;
   semak.forEach(([k, ok]) => { adForm[k].classList.toggle('invalid', !ok); if (!ok && !bad) bad = k; });
   if (bad){ adForm[bad].focus(); adForm[bad].scrollIntoView({block:'center', behavior:'smooth'}); return toast(MSG[bad]); }
-  if (!ADC.sedia()) return;
+  const tok = ADC.sedia(); if (!tok) return;
   const btn = $('#adHantar'), label = btn.textContent; btn.disabled = true; btn.textContent = 'Menghantar…';
   try{
-    const r = await api({action:'aduan', lulus:AD.lulus, masa:Date.now() - AD.mula,
+    const r = await api({action:'aduan', recaptcha:tok, masa:Date.now() - AD.mula,
       aduan:{jenis:v('jenis'), tajuk:v('tajuk'), keterangan:v('keterangan'), nama:v('nama'), emel:v('emel'), telefon:v('telefon'), laman:adForm.laman.value}});
     if (!r.ok) throw new Error(r.error || 'Ralat pelayan');
     $('#adRef').textContent = r.ref; adForm.style.display = 'none'; $('#adSuccess').style.display = '';
     window.scrollTo({top:0, behavior:'smooth'});
   }catch(err){
-    const m = err.message || String(err); toast('Gagal menghantar: ' + m);
-    if (/Pengesahan Keselamatan/i.test(m)) adReset();
+    toast('Gagal menghantar: ' + (err.message || err));
+    adReset();                                              // token reCAPTCHA sekali guna: minta tanda semula
   }finally{ btn.disabled = false; btn.textContent = label; }
 };
 $('#adBaru').onclick = () => { adForm.reset(); adForm.style.display = ''; $('#adSuccess').style.display = 'none'; adReset(); };
