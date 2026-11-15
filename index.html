@@ -537,10 +537,10 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
             <div class="opt"><input type="radio" name="kategori" id="kt1" value="Harian" checked><label for="kt1">Harian</label></div>
             <div class="opt"><input type="radio" name="kategori" id="kt2" value="Bermalam"><label for="kt2">Bermalam</label></div>
           </div></div>
-        <div class="field"><label>Nama Hutan Simpanan Kekal <span class="req">*</span></label>
+        <div class="field"><label>Hutan Simpanan Kekal <span class="req">*</span></label>
           <select class="input" name="hskSel" id="hskSel" required></select>
           <input class="input" name="hskLain" id="hskLain" placeholder="Taip nama Hutan Simpanan Kekal" style="margin-top:8px" hidden>
-          <div class="hint" id="hskHint">Senarai rasmi HSK mengikut jajahan.</div></div>
+          <div class="hint" id="hskHint"></div></div>
         <div class="field"><label>Lokasi / Destinasi <span class="req">*</span></label><select class="input" name="lokasiSel" id="lokasiSel" required></select>
           <input class="input" name="lokasiLain" id="lokasiLain" placeholder="Taip nama lokasi / destinasi" style="margin-top:8px" hidden>
           <div class="hint" id="lokHint">Pilih lokasi pendakian. Jika tiada dalam senarai, pilih <b>Lain-lain</b>.</div></div>
@@ -948,7 +948,7 @@ const hskJajahan = () => (Object.entries(HSK_LIST).find(([,l])=>l.includes(form.
 function hskToggle(){
   const lain = form.hskSel.value===HSK_LAIN, j = hskJajahan();
   form.hskLain.hidden = !lain; form.hskLain.required = lain; if(!lain){ form.hskLain.value=''; form.hskLain.classList.remove('invalid'); }
-  $('#hskHint').innerHTML = j ? `Jajahan: <b>${j}</b>` : lain ? 'Taip nama penuh HSK, cth. HSK Gunung Stong Tengah.' : 'Senarai rasmi HSK mengikut jajahan.';
+  $('#hskHint').innerHTML = j ? `Jajahan: <b>${j}</b>` : lain ? 'Taip nama penuh HSK, cth. HSK Gunung Stong Tengah.' : '';
   if(lain) form.hskLain.focus();
 }
 form.hskSel.addEventListener('change', hskToggle);
