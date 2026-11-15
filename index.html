@@ -582,6 +582,27 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
         <label class="declare"><input type="checkbox" name="perakuan" id="perakuan">
           <span><b>Saya mengesahkan bahawa semua maklumat dan dokumen yang dikemukakan dalam permohonan ini adalah benar.</b> Jika saya didapati memalsukan maklumat, dokumen, atau pernyataan palsu, saya boleh didakwa di bawah Kanun Keseksaan yang memperuntukkan hukuman penjara sehingga 6 bulan atau denda sehingga RM2,000.00 atau kedua-duanya.</span></label>
       </div>
+    </div>
+
+    <!-- 5 Pengesahan keselamatan -->
+    <div class="card">
+      <div class="card-head"><div class="step">5</div><div><h2>PENGESAHAN KESELAMATAN</h2><p>Security Verification</p></div></div>
+      <div class="card-body">
+        <div class="cap" id="pcap">
+          <button type="button" class="cap-box" id="pcapBox" role="checkbox" aria-checked="false" aria-label="Saya bukan robot"><span class="cap-tick"></span></button>
+          <div class="cap-txt"><b id="pcapLbl">Saya bukan robot</b><small id="pcapSub">I'm not a robot</small></div>
+          <div class="cap-brand"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z"/><path d="m9 12 2 2 4-4"/></svg><small>Pengesahan<br>Keselamatan</small></div>
+        </div>
+        <div class="cap-q" id="pcapQ" hidden>
+          <p>Sila jawab soalan di bawah untuk meneruskan:</p>
+          <div class="cap-row">
+            <canvas id="pcapCv" width="170" height="52" aria-label="Soalan pengesahan"></canvas>
+            <input class="input" id="pcapIn" inputmode="numeric" maxlength="3" placeholder="Jawapan" autocomplete="off" aria-label="Jawapan soalan pengesahan">
+            <button type="button" class="btn btn-primary" id="pcapOk">Sahkan</button>
+            <button type="button" class="cap-new" id="pcapNew" title="Soalan baharu" aria-label="Soalan baharu">↻</button>
+          </div>
+        </div>
+      </div>
       <div class="submit-bar">
         <span style="color:var(--muted);font-size:13px"><span style="color:var(--red)">*</span> Sila lengkapkan ruangan ini.</span>
         <div class="sb-act">
@@ -1024,6 +1045,8 @@ const telValue = () => telJoin(telCC.value, form.telefon.value);
 const telValid = () => telOk(telCC.value, form.telefon.value);
 
 /* ---------- SUBMIT ---------- */
+let PC = null;                                              // kotak "Saya bukan robot" Permohonan (dicipta di bahagian Aduan)
+form.addEventListener('reset', () => setTimeout(() => PC && PC.reset()));
 form.onsubmit = async e => {
   e.preventDefault();
   let bad = null, msg = 'Sila lengkapkan ruangan ini.';
@@ -1046,6 +1069,7 @@ form.onsubmit = async e => {
   if(!mgpList.length) return toast('Sila masukkan sekurang-kurangnya seorang MGP');
   if(peserta.length > mgpList.length * NISBAH){ ratioAlert(); return toast(`Nisbah 1 MGP : ${NISBAH} peserta — ${peserta.length} peserta memerlukan sekurang-kurangnya ${Math.ceil(peserta.length/NISBAH)} MGP`); }
   if(!$('#perakuan').checked) return toast('Sila tandakan perakuan pemohon');
+  const lulus = PC.sedia(); if(!lulus) return;
 
   const yr = new Date().getFullYear();
   // No. rujukan unik walaupun dijana pada peranti berbeza (cth. EP-2026-K7Q2M9X)
@@ -1065,11 +1089,16 @@ form.onsubmit = async e => {
   const btn = form.querySelector('[type=submit]'), label = btn.textContent;
   btn.disabled = true; btn.textContent = 'Menghantar…';
   try{
-    const r = await api({action:'submit', app});
+    const r = await api({action:'submit', app, lulus, masa:Date.now() - PC.S.mula});
     if (!r.ok) throw new Error(r.error || 'Ralat pelayan');
     app.created = r.created || app.created;
-  }catch(err){ toast('Gagal menghantar: ' + (err.message || err)); return; }
+  }catch(err){
+    const m = err.message || String(err); toast('Gagal menghantar: ' + m);
+    if (/Pengesahan Keselamatan/i.test(m)) PC.reset();
+    return;
+  }
   finally{ btn.disabled = false; btn.textContent = label; }
+  PC.reset();
   cache.set(app.ref, app);
   lastApp = app;
   $('#refOut').textContent = app.ref;
@@ -1193,14 +1222,58 @@ $('#qRef').onkeydown = e=>{ if(e.key==='Enter') doSemak(); };
    Pengesahan "Saya bukan robot": soalan ringkas daripada pelayan (token bertandatangan; jawapan tidak dihantar ke
    pelayar) → token lulus sekali guna. Pelayan turut menyemak medan perangkap, masa mengisi & had kekerapan. */
 const adForm = $('#adForm');
-const AD = {mula: Date.now(), lulus: '', luput: 0, token: ''};
-const adSet = (cls, lbl, sub) => {
-  const c = $('#cap'); c.classList.remove('busy', 'ok', 'err'); if (cls) c.classList.add(cls);
-  $('#capLbl').textContent = lbl || 'Saya bukan robot'; $('#capSub').textContent = sub || "I'm not a robot";
-  $('#capBox').setAttribute('aria-checked', cls === 'ok' ? 'true' : 'false');
-};
-function adLukis(soalan){                                   // soalan dilukis pada kanvas (bukan teks biasa)
-  const cv = $('#capCv'), g = cv.getContext('2d'), W = cv.width, H = cv.height, rnd = (a, b) => a + Math.random() * (b - a);
+/* Satu kotak "Saya bukan robot" bagi setiap borang (px = awalan id: 'cap' Aduan, 'pcap' Permohonan). */
+function buatCap(px){
+  const el = s => $('#' + px + s), S = {mula: Date.now(), lulus: '', luput: 0, token: ''};
+  const set = (cls, lbl, sub) => {
+    const c = el(''); c.classList.remove('busy', 'ok', 'err'); if (cls) c.classList.add(cls);
+    el('Lbl').textContent = lbl || 'Saya bukan robot'; el('Sub').textContent = sub || "I'm not a robot";
+    el('Box').setAttribute('aria-checked', cls === 'ok' ? 'true' : 'false');
+  };
+  async function cabaran(){
+    set('busy', 'Menyemak…', 'Sila tunggu'); el('In').value = '';
+    try{
+      const r = await api({action:'cabaran'}); if (!r.ok) throw new Error(r.error || 'Ralat pelayan');
+      S.token = r.token; capLukis(el('Cv'), r.soalan);
+      set('', 'Saya bukan robot', 'Jawab soalan di bawah'); el('Q').hidden = false; el('In').focus();
+    }catch(err){ set('err', 'Tidak dapat menyemak', 'Sila cuba semula'); toast('Pengesahan: ' + (err.message || err)); }
+  }
+  async function sahkan(){
+    const jaw = el('In').value.trim();
+    if (!jaw){ el('In').classList.add('invalid'); el('In').focus(); return; }
+    const b = el('Ok'); b.disabled = true;
+    try{
+      const r = await api({action:'sahkanCabaran', token:S.token, jawapan:jaw});
+      if (!r.ok) throw new Error(r.error || 'Ralat pelayan');
+      S.lulus = r.lulus; S.luput = Date.now() + 19*60*1000;
+      el('Q').hidden = true; set('ok', 'Disahkan', 'Verified · sah selama 20 minit');
+    }catch(err){
+      const m = err.message || String(err); el('In').classList.add('invalid'); toast(m);
+      if (/Terlalu banyak|tamat/i.test(m)) cabaran(); else { el('In').select(); }
+    }finally{ b.disabled = false; }
+  }
+  function reset(){
+    S.lulus = ''; S.token = ''; S.luput = 0; S.mula = Date.now();
+    el('Q').hidden = true; el('In').value = ''; set('');
+  }
+  /* Token lulus yang masih sah; jika tiada, goncang kotak, tatal ke situ dan beri amaran. */
+  function sedia(){
+    if (S.lulus && Date.now() <= S.luput) return S.lulus;
+    if (S.lulus) reset();
+    const c = el(''); c.classList.add('err'); setTimeout(() => c.classList.remove('err'), 600);
+    c.scrollIntoView({block:'center', behavior:'smooth'});
+    toast('Sila lengkapkan Pengesahan Keselamatan — klik "Saya bukan robot".');
+    return '';
+  }
+  el('Box').onclick = () => { const c = el(''); if (!c.classList.contains('ok') && !c.classList.contains('busy')) cabaran(); };
+  el('Ok').onclick = sahkan;
+  el('New').onclick = cabaran;
+  el('In').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); sahkan(); } });
+  el('In').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, ''); e.target.classList.remove('invalid'); });
+  return {S, reset, sedia};
+}
+function capLukis(cv, soalan){                              // soalan dilukis pada kanvas (bukan teks biasa)
+  const g = cv.getContext('2d'), W = cv.width, H = cv.height, rnd = (a, b) => a + Math.random() * (b - a);
   const bg = g.createLinearGradient(0, 0, W, H); bg.addColorStop(0, '#e9f4ec'); bg.addColorStop(1, '#f7fbf8');
   g.fillStyle = bg; g.fillRect(0, 0, W, H);
   for (let i = 0; i < 5; i++){ g.strokeStyle = `rgba(14,59,44,${rnd(.12,.28)})`; g.lineWidth = rnd(1, 2);
@@ -1211,37 +1284,8 @@ function adLukis(soalan){                                   // soalan dilukis pa
     g.font = `700 ${Math.round(rnd(20, 25))}px Georgia, "Times New Roman", serif`; g.fillStyle = `hsl(${Math.round(rnd(140, 165))},55%,${Math.round(rnd(18, 30))}%)`;
     g.textBaseline = 'middle'; g.fillText(c, 0, 0); g.restore(); x += c === ' ' ? 7 : rnd(13, 16); });
 }
-async function adCabaran(){
-  adSet('busy', 'Menyemak…', 'Sila tunggu'); $('#capIn').value = '';
-  try{
-    const r = await api({action:'cabaran'}); if (!r.ok) throw new Error(r.error || 'Ralat pelayan');
-    AD.token = r.token; adLukis(r.soalan);
-    adSet('', 'Saya bukan robot', 'Jawab soalan di bawah'); $('#capQ').hidden = false; $('#capIn').focus();
-  }catch(err){ adSet('err', 'Tidak dapat menyemak', 'Sila cuba semula'); toast('Pengesahan: ' + (err.message || err)); }
-}
-async function adSahkan(){
-  const jaw = $('#capIn').value.trim();
-  if (!jaw){ $('#capIn').classList.add('invalid'); $('#capIn').focus(); return; }
-  const b = $('#capOk'); b.disabled = true;
-  try{
-    const r = await api({action:'sahkanCabaran', token:AD.token, jawapan:jaw});
-    if (!r.ok) throw new Error(r.error || 'Ralat pelayan');
-    AD.lulus = r.lulus; AD.luput = Date.now() + 19*60*1000;
-    $('#capQ').hidden = true; adSet('ok', 'Disahkan', 'Verified · sah selama 20 minit');
-  }catch(err){
-    const m = err.message || String(err); $('#capIn').classList.add('invalid'); toast(m);
-    if (/Terlalu banyak|tamat/i.test(m)) adCabaran(); else { $('#capIn').select(); }
-  }finally{ b.disabled = false; }
-}
-function adReset(){
-  AD.lulus = ''; AD.token = ''; AD.luput = 0; AD.mula = Date.now();
-  $('#capQ').hidden = true; $('#capIn').value = ''; adSet('');
-}
-$('#capBox').onclick = () => { if (!$('#cap').classList.contains('ok') && !$('#cap').classList.contains('busy')) adCabaran(); };
-$('#capOk').onclick = adSahkan;
-$('#capNew').onclick = adCabaran;
-$('#capIn').addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); adSahkan(); } });
-$('#capIn').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, ''); e.target.classList.remove('invalid'); });
+const ADC = buatCap('cap'), AD = ADC.S, adReset = ADC.reset;
+PC = buatCap('pcap');
 adForm.addEventListener('input', e => e.target.classList && e.target.classList.remove('invalid'));
 adForm.keterangan.addEventListener('input', () => { const n = adForm.keterangan.value.trim().length;
   $('#adCount').textContent = n; $('#adCount').parentElement.classList.toggle('ok', n >= 15); });
@@ -1257,12 +1301,7 @@ adForm.onsubmit = async e => {
   let bad = null;
   semak.forEach(([k, ok]) => { adForm[k].classList.toggle('invalid', !ok); if (!ok && !bad) bad = k; });
   if (bad){ adForm[bad].focus(); adForm[bad].scrollIntoView({block:'center', behavior:'smooth'}); return toast(MSG[bad]); }
-  if (!AD.lulus || Date.now() > AD.luput){
-    if (AD.lulus) adReset();
-    $('#cap').classList.add('err'); setTimeout(() => $('#cap').classList.remove('err'), 600);
-    $('#cap').scrollIntoView({block:'center', behavior:'smooth'});
-    return toast('Sila lengkapkan Pengesahan Keselamatan — klik "Saya bukan robot".');
-  }
+  if (!ADC.sedia()) return;
   const btn = $('#adHantar'), label = btn.textContent; btn.disabled = true; btn.textContent = 'Menghantar…';
   try{
     const r = await api({action:'aduan', lulus:AD.lulus, masa:Date.now() - AD.mula,
