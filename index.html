@@ -1089,11 +1089,16 @@ async function doSemak(){
 }
 const SERAMBI_URL = 'https:\/\/serambipay.kelantan.gov.my/';
 $('#btnSemak').onclick = doSemak;
-/* Pautan terus ?ref=EP-…: buka Semak Status & semak automatik (cth. selepas dibuka semula dalam Safari untuk mencetak) */
+/* Pautan terus ?ref=EP-…: buka Semak Status & semak automatik (cth. selepas dibuka semula dalam Safari untuk mencetak).
+   ?ref=EP-…&cetak=1 (butang "Cetak Permit" dalam Sistem Pengurusan): jika permit sudah dikeluarkan, terus buka tetingkap cetak. */
 try {
-  const qref = new URLSearchParams(location.search).get('ref');
+  const qs = new URLSearchParams(location.search), qref = qs.get('ref');
   if (qref && /^EP-\d{4}-[A-Z0-9]{5,12}$/i.test(qref.trim()))
-    setTimeout(() => { show('semak'); $('#qRef').value = qref.trim().toUpperCase(); doSemak(); });   // selepas skrip selesai dimuatkan
+    setTimeout(async () => {                                   // selepas skrip selesai dimuatkan
+      show('semak'); $('#qRef').value = qref.trim().toUpperCase(); await doSemak();
+      const b = qs.has('cetak') && $('#semakOut [data-print]');
+      if (b) b.click();
+    });
 } catch (e) {}
 
 /* Kad status mengikut langkah SOP */
