@@ -94,6 +94,19 @@ main{max-width:1200px;margin:22px auto 60px;padding:0 24px;position:relative;z-i
 .grid{display:grid;gap:16px}
 .g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
 .span2{grid-column:span 2}.span3{grid-column:span 3}.full{grid-column:1/-1}
+/* Kapasiti harian lokasi (baki slot) */
+.kap-box{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff}
+.kap-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-size:13px;margin-bottom:8px}
+.kap-head b{color:var(--forest)}
+.kap-row{display:grid;grid-template-columns:118px 1fr 150px;gap:10px;align-items:center;font-size:13px;padding:4px 0}
+.kap-bar{height:9px;border-radius:6px;background:#eef1ef;overflow:hidden}
+.kap-bar i{display:block;height:100%;border-radius:6px;background:var(--leaf)}
+.kap-row.hampir .kap-bar i{background:#d9a21b}.kap-row.penuh .kap-bar i{background:#c0392b}
+.kap-row .kap-baki{text-align:right;font-weight:600;color:var(--forest)}
+.kap-row.hampir .kap-baki{color:#9a6b00}.kap-row.penuh .kap-baki,.kap-row.tutup .kap-baki{color:#b42318}
+.kap-msg{margin-top:8px;font-size:12.5px;border-radius:8px;padding:8px 10px;background:var(--mint);color:var(--forest)}
+.kap-msg.err{background:#fdecea;color:#b42318}
+@media (max-width:640px){.kap-row{grid-template-columns:96px 1fr;}.kap-row .kap-baki{grid-column:1/-1;text-align:left;margin-top:-2px}}
 @media(max-width:860px){.g2,.g3,.g4{grid-template-columns:1fr}.span2,.span3{grid-column:auto}}
 .field label{display:block;font-size:12.5px;font-weight:600;color:#33453b;margin-bottom:6px}
 .field label .req{color:var(--red)}
@@ -533,6 +546,7 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
           <div class="hint" id="lokHint">Pilih lokasi pendakian. Jika tiada dalam senarai, pilih <b>Lain-lain</b>.</div></div>
         <div class="field"><label>Tarikh Sah Dari <span class="req">*</span></label><input class="input" type="date" name="dari" required></div>
         <div class="field"><label>Tarikh Hingga <span class="req">*</span></label><input class="input" type="date" name="hingga" required><div class="hint" id="tempohHint"></div></div>
+        <div class="full kap-box" id="kapBox" hidden aria-live="polite"></div>
         <div class="field"><label>Laluan Masuk Pendakian</label><input class="input" name="laluanMasuk" placeholder="Pilihan"></div>
         <div class="field"><label>Laluan Keluar Pendakian</label><input class="input" name="laluanKeluar" placeholder="Pilihan"></div>
       </div>
@@ -845,6 +859,7 @@ function recount(){
   const L=p.filter(x=>x.jantina==='Lelaki').length, W=p.length-L, WN=p.filter(x=>x.wn==='Warganegara').length;
   $('#breakdown').innerHTML = p.length ? `<div class="count-pill">Lelaki <b>${L}</b></div><div class="count-pill">Wanita <b>${W}</b></div><div class="count-pill">Warganegara <b>${WN}</b></div><div class="count-pill">Bukan WN <b>${p.length-WN}</b></div>` : '';
   renderRatio();
+  if (typeof kapData !== 'undefined' && kapData) kapRender();   // bilangan berubah: kira semula baki
 }
 /* ---------- NISBAH 1 MGP : 7 PESERTA ---------- */
 const NISBAH = 7;
@@ -953,6 +968,49 @@ form.dari.min = today(); form.dari.onchange = ()=>{ form.hingga.min = form.dari.
 form.addEventListener('input', e=>e.target.classList?.remove('invalid'));
 form.addEventListener('reset', ()=>setTimeout(()=>{ resetRows(); tempoh(); $$('.invalid',form).forEach(i=>i.classList.remove('invalid')); }));
 
+/* ---------- KAPASITI HARIAN LOKASI: papar baki slot & sekat jika melebihi ----------
+   Baki diambil daripada pelayan (bilangan sahaja). Pelayan menyemak semula semasa permohonan dihantar. */
+const HARI_NAMA = ['Ahd','Isn','Sel','Rab','Kha','Jum','Sab'];
+var kapData = null, kapKunci = '', kapPenuh = null, kapTimer = null, kapSeq = 0;   // var: recount() boleh dipanggil lebih awal
+const kapPerlu = () => readRows('#tblMgp').length + readRows('#tblPes').length;
+function kapSemak(){ clearTimeout(kapTimer); kapTimer = setTimeout(kapMuat, 400); }
+async function kapMuat(){
+  const lokasi = lokasiValue(), dari = form.dari.value, hingga = form.hingga.value && form.hingga.value >= dari ? form.hingga.value : dari;
+  const kunci = [lokasi, dari, hingga].join('|');
+  if (!lokasi || !dari){ kapData = null; kapKunci = ''; return kapRender(); }
+  if (kunci === kapKunci) return kapRender();
+  const seq = ++kapSeq;
+  try{ const r = await api({action:'kapasiti', lokasi, dari, hingga}); if (seq !== kapSeq) return; kapData = r && r.ok && r.ada ? r : null; kapKunci = kunci; }
+  catch(e){ if (seq !== kapSeq) return; kapData = null; kapKunci = ''; }
+  kapRender();
+}
+function kapRender(){
+  const box = $('#kapBox'); kapPenuh = null;
+  if (!box) return;
+  if (!kapData){ box.hidden = true; box.innerHTML = ''; return; }
+  const perlu = kapPerlu(), hari = kapData.hari;
+  let kurang = null;
+  const rows = hari.map(h => {
+    const tiada = h.had === null, tutup = h.had === 0;
+    const pct = tiada ? 0 : tutup ? 100 : Math.min(100, Math.round(h.terisi / h.had * 100));
+    const cls = tiada ? '' : tutup ? 'tutup penuh' : h.baki <= 0 ? 'penuh' : h.baki < h.had * 0.2 ? 'hampir' : '';
+    if (!tiada && !kurang && (tutup || perlu > h.baki)) kurang = h;
+    const baki = tiada ? 'Tiada had' : tutup ? 'Ditutup' : h.baki <= 0 ? 'PENUH' : `Baki ${h.baki} slot`;
+    return `<div class="kap-row ${cls}"><span>${HARI_NAMA[new Date(h.tarikh+'T00:00:00').getDay()]} ${fmtD(h.tarikh)}</span>` +
+      `<div class="kap-bar"><i style="width:${pct}%"></i></div><span class="kap-baki">${baki}</span></div>`;
+  }).join('');
+  const had = [...new Set(hari.map(h => h.had).filter(v => v !== null && v > 0))];
+  if (kurang) kapPenuh = kurang.had === 0 ? `${kapData.lokasi} ditutup pada ${fmtD(kurang.tarikh)}. Sila pilih tarikh lain.`
+    : `${fmtD(kurang.tarikh)} hanya ada baki ${kurang.baki} slot, permohonan anda memerlukan ${perlu} (MGP + peserta). Kurangkan peserta atau pilih tarikh lain.`;
+  box.innerHTML = `<div class="kap-head"><span>📍 <b>${esc(kapData.lokasi)}</b> · ${had.length === 1 ? `Kapasiti ${had[0]} orang/hari` : 'Kapasiti mengikut tarikh'}</span>` +
+    `<span>Permohonan anda: <b>${perlu}</b> orang (MGP + peserta)</span></div>${rows}` +
+    `<div class="kap-msg${kapPenuh ? ' err' : ''}">${kapPenuh ? '⚠ ' + esc(kapPenuh) : 'Slot mencukupi untuk tarikh yang dipilih. Baki disahkan semula semasa permohonan dihantar.'}</div>`;
+  box.hidden = false;
+}
+['lokasiSel','dari','hingga'].forEach(n => form[n].addEventListener('change', kapSemak));
+form.lokasiLain.addEventListener('input', kapSemak);
+form.addEventListener('reset', () => { kapData = null; kapKunci = ''; setTimeout(kapRender); });
+
 /* ---------- NO. MYKAD: FORMAT AUTOMATIK 831026-03-5793 ---------- */
 const fmtIC = v => { const d = String(v || '').replace(/\D/g, '').slice(0, 12);
   return d.length > 8 ? `${d.slice(0,6)}-${d.slice(6,8)}-${d.slice(8)}` : d.length > 6 ? `${d.slice(0,6)}-${d.slice(6)}` : d; };
@@ -1049,6 +1107,7 @@ form.onsubmit = async e => {
   const mgpList = readRows('#tblMgp'), peserta = readRows('#tblPes');
   if(!mgpList.length) return toast('Sila masukkan sekurang-kurangnya seorang MGP');
   if(peserta.length > mgpList.length * NISBAH){ ratioAlert(); return toast(`Nisbah 1 MGP : ${NISBAH} peserta — ${peserta.length} peserta memerlukan sekurang-kurangnya ${Math.ceil(peserta.length/NISBAH)} MGP`); }
+  if(kapPenuh){ $('#kapBox').scrollIntoView({block:'center',behavior:'smooth'}); return toast(kapPenuh); }
   if(!$('#perakuan').checked) return toast('Sila tandakan perakuan pemohon');
   const recaptcha = PC.sedia(); if(!recaptcha) return;
 
@@ -1076,6 +1135,7 @@ form.onsubmit = async e => {
   }catch(err){
     const m = err.message || String(err); toast('Gagal menghantar: ' + m);
     PC.reset();                                             // token reCAPTCHA sekali guna: minta tanda semula
+    if (/kapasiti|ditutup/i.test(m)){ kapKunci = ''; kapMuat(); $('#kapBox').scrollIntoView({block:'center',behavior:'smooth'}); }   // slot berubah: muat semula baki
     return;
   }
   finally{ btn.disabled = false; btn.textContent = label; }
