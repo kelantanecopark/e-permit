@@ -344,8 +344,14 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 .hub span{font-size:15px;line-height:1.5;color:var(--ink);overflow-wrap:anywhere}
 .hub a{color:inherit;font-weight:600;text-decoration:none;border-bottom:1px dashed currentColor;white-space:nowrap}
 .hub a:hover{color:var(--leaf)}
-@page{size:A4 portrait;margin:14mm 16mm}
-@page lampiran{size:A4 landscape;margin:12mm 12mm}
+/* Kotak jidar halaman: No. halaman sahaja di bawah kanan. Apabila kotak jidar ditetapkan, Chrome/Edge (versi 131+)
+   tidak lagi mencetak pengepala/pengaki pelayar sendiri (alamat laman, tarikh, tajuk). */
+@page{size:A4 portrait;margin:14mm 16mm;
+  @top-left{content:""} @top-center{content:""} @top-right{content:""} @bottom-left{content:""} @bottom-center{content:""}
+  @bottom-right{content:counter(page) "/" counter(pages);font:8pt Arial,Helvetica,sans-serif;color:#444;vertical-align:middle}}
+@page lampiran{size:A4 landscape;margin:12mm 12mm;
+  @top-left{content:""} @top-center{content:""} @top-right{content:""} @bottom-left{content:""} @bottom-center{content:""}
+  @bottom-right{content:counter(page) "/" counter(pages);font:8pt Arial,Helvetica,sans-serif;color:#444;vertical-align:middle}}
 @media print{
   body{background:#fff}
   .app,.overlay,.drawer,.toast{display:none!important}
