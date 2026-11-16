@@ -1443,7 +1443,7 @@ function printPermit(a, isAdmin, salinan){
     </div>
     <div style="margin-top:8px"><b>B.&nbsp; PESERTA:</b></div>
     <table style="width:100%;margin-top:5px"><thead><tr><th style="width:5%">BIL.</th><th style="width:22%">NAMA</th><th style="width:14%">NO. MYKAD/ PASSPORT</th><th>ALAMAT</th><th style="width:11%">NO. TELEFON</th><th style="width:11%">NO. TELEFON WARIS</th></tr></thead>
-    <tbody>${pad(a.peserta,7).map((m,i)=>`<tr><td class="center">${i+1}.</td><td>${cell(m?.nama)}</td><td>${cell(m?.ic)}</td><td>${cell(m?.alamat)}</td><td>${cell(m?.tel)}</td><td>${cell(m?.waris)}</td></tr>`).join('')}</tbody></table>
+    <tbody>${pad(a.peserta,1).map((m,i)=>`<tr><td class="center">${i+1}.</td><td>${cell(m?.nama)}</td><td>${cell(m?.ic)}</td><td>${cell(m?.alamat)}</td><td>${cell(m?.tel)}</td><td>${cell(m?.waris)}</td></tr>`).join('')}</tbody></table>
     <div style="font-size:8pt;font-style:italic;margin-top:3px">*Sila tambah lampiran sekiranya ruangan tidak mencukupi<br>*Potong yang tidak berkenaan</div>
     <div style="font-size:8pt;margin-top:6px">Jumlah: ${a.mgpList.length} MGP + ${a.peserta.length} peserta = <b>${total(a)} orang</b> · No. Rujukan Permohonan: ${a.ref}</div>
   </section>`;
