@@ -106,6 +106,8 @@ main{max-width:1200px;margin:22px auto 60px;padding:0 24px;position:relative;z-i
 .kap-row.hampir .kap-baki{color:#9a6b00}.kap-row.penuh .kap-baki,.kap-row.tutup .kap-baki{color:#b42318}
 .kap-msg{margin-top:8px;font-size:12.5px;border-radius:8px;padding:8px 10px;background:var(--mint);color:var(--forest)}
 .kap-msg.err{background:#fdecea;color:#b42318}
+.tutup-notis{border:1px solid #f3c6c0;background:#fdecea;color:#7a1d14;border-radius:12px;padding:12px 14px;font-size:13.5px;line-height:1.5}
+.tutup-notis b{color:#b42318}.tutup-notis ul{margin:6px 0 0;padding-left:20px}
 @media (max-width:640px){.kap-row{grid-template-columns:96px 1fr;}.kap-row .kap-baki{grid-column:1/-1;text-align:left;margin-top:-2px}}
 @media(max-width:860px){.g2,.g3,.g4{grid-template-columns:1fr}.span2,.span3{grid-column:auto}}
 .field label{display:block;font-size:12.5px;font-weight:600;color:#33453b;margin-bottom:6px}
@@ -527,6 +529,7 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
     <div class="card">
       <div class="card-head"><div class="step">2</div><div><h2>MAKLUMAT AKTIVITI</h2><p>Butiran kawasan dan tempoh sah permit</p></div></div>
       <div class="card-body grid g2">
+        <div class="full tutup-notis" id="tutupNotis" hidden role="status"></div>
         <div class="field"><label>Jenis Aktiviti</label>
           <div class="seg c2">
             <div class="opt"><input type="radio" name="aktiviti" id="ak1" value="Rekreasi" checked><label for="ak1">Rekreasi</label></div>
@@ -975,12 +978,12 @@ var kapData = null, kapKunci = '', kapPenuh = null, kapTimer = null, kapSeq = 0;
 const kapPerlu = () => readRows('#tblMgp').length + readRows('#tblPes').length;
 function kapSemak(){ clearTimeout(kapTimer); kapTimer = setTimeout(kapMuat, 400); }
 async function kapMuat(){
-  const lokasi = lokasiValue(), dari = form.dari.value, hingga = form.hingga.value && form.hingga.value >= dari ? form.hingga.value : dari;
-  const kunci = [lokasi, dari, hingga].join('|');
-  if (!lokasi || !dari){ kapData = null; kapKunci = ''; return kapRender(); }
+  const lokasi = lokasiValue(), hsk = hskValue(), jajahan = hskJajahan(), dari = form.dari.value, hingga = form.hingga.value && form.hingga.value >= dari ? form.hingga.value : dari;
+  const kunci = [lokasi, hsk, jajahan, dari, hingga].join('|');
+  if (!(lokasi || hsk) || !dari){ kapData = null; kapKunci = ''; return kapRender(); }
   if (kunci === kapKunci) return kapRender();
   const seq = ++kapSeq;
-  try{ const r = await api({action:'kapasiti', lokasi, dari, hingga}); if (seq !== kapSeq) return; kapData = r && r.ok && r.ada ? r : null; kapKunci = kunci; }
+  try{ const r = await api({action:'kapasiti', lokasi, hsk, jajahan, dari, hingga}); if (seq !== kapSeq) return; kapData = r && r.ok && r.ada ? r : null; kapKunci = kunci; }
   catch(e){ if (seq !== kapSeq) return; kapData = null; kapKunci = ''; }
   kapRender();
 }
@@ -995,20 +998,34 @@ function kapRender(){
     const pct = tiada ? 0 : tutup ? 100 : Math.min(100, Math.round(h.terisi / h.had * 100));
     const cls = tiada ? '' : tutup ? 'tutup penuh' : h.baki <= 0 ? 'penuh' : h.baki < h.had * 0.2 ? 'hampir' : '';
     if (!tiada && !kurang && (tutup || perlu > h.baki)) kurang = h;
-    const baki = tiada ? 'Tiada had' : tutup ? 'Ditutup' : h.baki <= 0 ? 'PENUH' : `Baki ${h.baki} slot`;
+    const baki = tiada ? 'Tiada had' : tutup ? '⛔ Ditutup' : h.baki <= 0 ? 'PENUH' : `Baki ${h.baki} slot`;
     return `<div class="kap-row ${cls}"><span>${HARI_NAMA[new Date(h.tarikh+'T00:00:00').getDay()]} ${fmtD(h.tarikh)}</span>` +
       `<div class="kap-bar"><i style="width:${pct}%"></i></div><span class="kap-baki">${baki}</span></div>`;
   }).join('');
   const had = [...new Set(hari.map(h => h.had).filter(v => v !== null && v > 0))];
-  if (kurang) kapPenuh = kurang.had === 0 ? `${kapData.lokasi} ditutup pada ${fmtD(kurang.tarikh)}. Sila pilih tarikh lain.`
+  const z = kurang && kurang.tutup;
+  if (kurang) kapPenuh = z ? `${z.label} ditutup pada ${fmtD(kurang.tarikh)}${z.catatan ? ` (${z.catatan})` : ''} — tempoh penutupan ${fmtD(z.dari)} hingga ${fmtD(z.hingga)}. Sila pilih tarikh lain.`
+    : kurang.had === 0 ? `${kapData.lokasi} ditutup pada ${fmtD(kurang.tarikh)}. Sila pilih tarikh lain.`
     : `${fmtD(kurang.tarikh)} hanya ada baki ${kurang.baki} slot, permohonan anda memerlukan ${perlu} (MGP + peserta). Kurangkan peserta atau pilih tarikh lain.`;
-  box.innerHTML = `<div class="kap-head"><span>📍 <b>${esc(kapData.lokasi)}</b> · ${had.length === 1 ? `Kapasiti ${had[0]} orang/hari` : 'Kapasiti mengikut tarikh'}</span>` +
+  box.innerHTML = `<div class="kap-head"><span>📍 <b>${esc(kapData.lokasi)}</b> · ${had.length === 1 ? `Kapasiti ${had[0]} orang/hari` : had.length ? 'Kapasiti mengikut tarikh' : 'Status penutupan'}</span>` +
     `<span>Permohonan anda: <b>${perlu}</b> orang (MGP + peserta)</span></div>${rows}` +
     `<div class="kap-msg${kapPenuh ? ' err' : ''}">${kapPenuh ? '⚠ ' + esc(kapPenuh) : 'Slot mencukupi untuk tarikh yang dipilih. Baki disahkan semula semasa permohonan dihantar.'}</div>`;
   box.hidden = false;
 }
-['lokasiSel','dari','hingga'].forEach(n => form[n].addEventListener('change', kapSemak));
-form.lokasiLain.addEventListener('input', kapSemak);
+['lokasiSel','hskSel','dari','hingga'].forEach(n => form[n].addEventListener('change', kapSemak));
+form.lokasiLain.addEventListener('input', kapSemak); form.hskLain.addEventListener('input', kapSemak);
+
+/* Notis penutupan semasa & akan datang (cth. musim tengkujuh) — dipapar di atas borang */
+(async () => {
+  try{
+    const r = await api({action:'penutupan'}), L = (r && r.tutup) || [];
+    if (!L.length) return;
+    const kini = today(), box = $('#tutupNotis');
+    box.innerHTML = `⛔ <b>Notis penutupan</b><ul>${L.map(z => `<li><b>${esc(z.label)}</b> ${z.dari <= kini ? 'ditutup sehingga' : `ditutup ${esc(fmtD(z.dari))} hingga`} ${esc(fmtD(z.hingga))}${z.catatan ? ` — ${esc(z.catatan)}` : ''}</li>`).join('')}</ul>` +
+      '<div style="margin-top:6px">Permohonan bagi tarikh dalam tempoh penutupan tidak akan diterima.</div>';
+    box.hidden = false;
+  }catch(e){}
+})();
 form.addEventListener('reset', () => { kapData = null; kapKunci = ''; setTimeout(kapRender); });
 
 /* ---------- NO. MYKAD: FORMAT AUTOMATIK 831026-03-5793 ---------- */
