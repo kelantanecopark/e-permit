@@ -809,7 +809,7 @@ function addRow(tbl, cols, extra){
   const tb = $('tbody', tbl), tr = document.createElement('tr');
   tr.innerHTML = `<td class="bil"></td>` + cols.map(([k,p])=>`<td><input class="input" data-k="${k}" placeholder="${p}" autocomplete="off"></td>`).join('')
     + (extra ? `<td><select class="input" data-k="jantina"><option>Lelaki</option><option>Wanita</option></select></td>
-       <td><select class="input" data-k="wn"><option>Warganegara</option><option>Bukan Warganegara</option></select></td>` : '')
+       <td><select class="input" data-k="wn"><option>Warganegara</option><option value="Bukan Warganegara">B/Warganegara</option></select></td>` : '')
     + `<td class="act"><button type="button" class="icon-btn" title="Buang baris"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg></button></td>`;
   $('.icon-btn', tr).onclick = () => {
     if (tbl.id === 'tblMgp'){                               // jaga nisbah apabila MGP dibuang
