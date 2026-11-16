@@ -821,6 +821,14 @@ function addRow(tbl, cols, extra){
   };
   if (tbl.id === 'tblMgp'){ const ic = $('[data-k="ic"]', tr); ic.inputMode = 'numeric'; ic.maxLength = 14;   // MyKad MGP: format automatik
     ic.addEventListener('input', () => { const v = fmtIC(ic.value); if (v !== ic.value) ic.value = v; }); }
+  if (tbl.id === 'tblPes'){                                   // Peserta: Warganegara = MyKad (format automatik), lain = Passport
+    const ic = $('[data-k="ic"]', tr), wn = $('[data-k="wn"]', tr);
+    const mod = () => { const mk = wn.value === 'Warganegara';
+      ic.placeholder = mk ? 'MyKad 850101-03-5123' : 'No. Passport'; ic.inputMode = mk ? 'numeric' : 'text'; ic.maxLength = mk ? 14 : 15;
+      if (!ic.value) return;                                    // baris baharu (kosong): fmtIC belum perlu
+      // ada huruf = Passport ditaip sebelum memilih "Bukan Warganegara": jangan buang hurufnya (semakan akan memaklumkan)
+      const v = mk && !/[a-z]/i.test(ic.value) ? fmtIC(ic.value) : ic.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (v !== ic.value) ic.value = v; };
+    ic.addEventListener('input', mod); wn.addEventListener('change', () => { mod(); if (ic.value) semakIcPeserta(tr); }); mod(); }
   tr.addEventListener('input', recount); tr.addEventListener('change', recount);
   tb.appendChild(tr); renumber();
   return tr;
@@ -968,10 +976,21 @@ function semakIcMedan(el, wajib){
   const v = el.value.trim(); if (!v || (!wajib && !nampakMyKad(v))) { el.classList.remove('invalid'); return ''; }
   const e = icSemak(v); el.classList.toggle('invalid', !!e); return e;
 }
+/* Peserta (baris yang diisi): No. MyKad wajib bagi Warganegara (format 850101-03-5123 & tarikh/kod sah),
+   No. Passport wajib bagi Bukan Warganegara (6–15 huruf/angka). Pulangan: mesej ralat atau ''. */
+const PASSPORT_RE = /^[A-Z0-9]{6,15}$/;
+function semakIcPeserta(tr){
+  const el = $('[data-k=ic]', tr), mk = $('[data-k=wn]', tr).value === 'Warganegara', v = el.value.trim();
+  const e = !v ? (mk ? 'No. MyKad wajib diisi (cth. 850101-03-5123)' : 'No. Passport wajib diisi')
+          : mk ? (icSemak(v) ? 'No. MyKad ' + icSemak(v) : '')
+          : PASSPORT_RE.test(v) ? '' : 'No. Passport tidak sah (6–15 huruf/angka)';
+  el.classList.toggle('invalid', !!e); return e;
+}
 form.kppn.addEventListener('blur', () => { const e = semakIcMedan(form.kppn, true); if (e) toast('No. K.P.P.N: ' + e); });
 form.addEventListener('focusout', e => {
   const el = e.target; if (!el.matches || !el.matches('[data-k=ic]') || el.readOnly) return;
-  const err = semakIcMedan(el, !!el.closest('#tblMgp')); if (err) toast('No. MyKad: ' + err);
+  if (el.closest('#tblPes')){ if (el.value.trim()){ const err = semakIcPeserta(el.closest('tr')); if (err) toast(err); } return; }
+  const err = semakIcMedan(el, true); if (err) toast('No. MyKad: ' + err);
 });
 form.kppn.addEventListener('input', () => {
   const el = form.kppn, before = el.value, pos = el.selectionStart ?? before.length;
@@ -1016,9 +1035,9 @@ form.onsubmit = async e => {
   const icErr = icSemak(form.kppn.value);
   if(!bad && icErr){ form.kppn.classList.add('invalid'); bad = form.kppn; msg = 'No. K.P.P.N: ' + icErr; }
   if(!bad) $$('#tblMgp tbody tr, #tblPes tbody tr').filter(rowFilled).some(r => {
-    const el = $('[data-k=ic]', r), mgp = !!r.closest('#tblMgp'), err = semakIcMedan(el, mgp);
+    const el = $('[data-k=ic]', r), mgp = !!r.closest('#tblMgp'), err = mgp ? semakIcMedan(el, true) : semakIcPeserta(r);
     if (!err) return false;
-    bad = el; msg = `Lampiran A — ${mgp ? 'MGP' : 'Peserta'} ${r.cells[0].textContent} No. MyKad: ${err}`; return true;
+    bad = el; msg = mgp ? `Lampiran A — MGP ${r.cells[0].textContent} No. MyKad: ${err}` : `Lampiran A — Peserta ${r.cells[0].textContent} ${err}`; return true;
   });
   if(!bad && !telValid()){ form.telefon.classList.add('invalid'); bad = form.telefon;
     msg = telNegara()[0] === 'MY' ? 'No. telefon tidak sah (cth. 012-3456789)' : 'No. telefon tidak sah — semak kod negara dan nombor'; }
