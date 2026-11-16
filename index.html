@@ -773,7 +773,7 @@ const SUBTITLE = {
 
 /* ---------- DYNAMIC ROWS ---------- */
 const mgpCols = [['nama','Nama penuh'],['ic','No. MyKad'],['tel','No. Telefon'],['mgp','No. MGP']];
-const pesCols = [['nama','Nama penuh'],['ic','MyKad / Passport'],['alamat','Alamat'],['tel','No. Telefon'],['waris','Tel. Waris']];
+const pesCols = [['nama','Nama penuh'],['ic','No. MyKad'],['alamat','Alamat'],['tel','No. Telefon'],['waris','Tel. Waris']];
 /* ---------- KOD NEGARA TELEFON PEMOHON ---------- */
 // [ISO, nama, kod dail] — Malaysia & ASEAN dahulu, kemudian negara pelancong utama (abjad)
 const NEGARA = [['MY','Malaysia','60'],['SG','Singapura','65'],['BN','Brunei','673'],['ID','Indonesia','62'],['TH','Thailand','66'],
@@ -824,7 +824,7 @@ function addRow(tbl, cols, extra){
   if (tbl.id === 'tblPes'){                                   // Peserta: Warganegara = MyKad (format automatik), lain = Passport
     const ic = $('[data-k="ic"]', tr), wn = $('[data-k="wn"]', tr);
     const mod = () => { const mk = wn.value === 'Warganegara';
-      ic.placeholder = mk ? 'MyKad 850101-03-5123' : 'No. Passport'; ic.inputMode = mk ? 'numeric' : 'text'; ic.maxLength = mk ? 14 : 15;
+      ic.placeholder = mk ? 'No. MyKad' : 'No. Passport'; ic.inputMode = mk ? 'numeric' : 'text'; ic.maxLength = mk ? 14 : 15;
       if (!ic.value) return;                                    // baris baharu (kosong): fmtIC belum perlu
       // ada huruf = Passport ditaip sebelum memilih "Bukan Warganegara": jangan buang hurufnya (semakan akan memaklumkan)
       const v = mk && !/[a-z]/i.test(ic.value) ? fmtIC(ic.value) : ic.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (v !== ic.value) ic.value = v; };
