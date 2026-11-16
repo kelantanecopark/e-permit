@@ -1096,8 +1096,10 @@ try {
   if (qref && /^EP-\d{4}-[A-Z0-9]{5,12}$/i.test(qref.trim()))
     setTimeout(async () => {                                   // selepas skrip selesai dimuatkan
       show('semak'); $('#qRef').value = qref.trim().toUpperCase(); await doSemak();
-      const b = qs.has('cetak') && $('#semakOut [data-print]');
+      if (!qs.has('cetak')) return;
+      const b = $('#semakOut [data-print]');
       if (b) b.click();
+      else lapor('gagal', $('#semakOut').textContent.trim().slice(0, 200) || 'Permit belum dikeluarkan');
     });
 } catch (e) {}
 
@@ -1256,6 +1258,10 @@ if (location.hash === '#hubungi') setTimeout(() => show('hubungi'));
 const TITLE0 = document.title;
 /* Cetak TERUS dalam sentuhan/klik pengguna. Safari iPhone/iPad menyekat window.print() yang ditangguhkan
    (setTimeout/Promise) tanpa sebarang mesej — jadi jangan tangguhkan panggilan ini. */
+/* Dibuka dalam bingkai tersembunyi oleh Sistem Pengurusan Permit (butang "Cetak Permit"): maklumkan status cetakan
+   kepada halaman induk supaya ia boleh membuang bingkai, atau membuka tab baharu jika cetakan tidak dapat dibuka. */
+const DLM_BINGKAI = window.parent !== window;
+const lapor = (st, sebab) => { if (DLM_BINGKAI) try { window.parent.postMessage({ePermitCetak: st, sebab: sebab || ''}, '*'); } catch (e) {} };
 function cetak(nama, ref){
   document.title = nama;   // nama fail PDF
   const pulih = () => { document.title = TITLE0; window.removeEventListener('afterprint', pulih); };
@@ -1263,16 +1269,16 @@ function cetak(nama, ref){
   // Kesan sama ada tetingkap cetak benar-benar dibuka. Pelayar dalam aplikasi (WKWebView/WebView — cth. aplikasi
   // pengimbas QR, Facebook, WhatsApp) mengabaikan window.print() tanpa sebarang ralat: tiada 'beforeprint'.
   let dibuka = false;
-  const tanda = () => { dibuka = true; };
-  const mq = window.matchMedia ? window.matchMedia('print') : null, mqf = e => { if (e.matches) dibuka = true; };
+  const tanda = () => { if (!dibuka) lapor('dibuka'); dibuka = true; };
+  const mq = window.matchMedia ? window.matchMedia('print') : null, mqf = e => { if (e.matches) tanda(); };
   window.addEventListener('beforeprint', tanda);
   if (mq && mq.addEventListener) mq.addEventListener('change', mqf);
-  try { window.print(); }
-  catch (e) { pulih(); toast('Tidak dapat membuka cetakan: ' + (e.message || e)); }
+  try { window.print(); if (dibuka) lapor('selesai'); }
+  catch (e) { pulih(); lapor('gagal', String(e.message || e)); toast('Tidak dapat membuka cetakan: ' + (e.message || e)); }
   setTimeout(() => {
     window.removeEventListener('beforeprint', tanda);
     if (mq && mq.removeEventListener) mq.removeEventListener('change', mqf);
-    if (!dibuka) { pulih(); bantuanCetak(ref); }
+    if (!dibuka) { pulih(); lapor('gagal', 'Tetingkap cetak tidak dibuka'); if (!DLM_BINGKAI) bantuanCetak(ref); }
   }, 1500);
 }
 /* Pelayar dalam aplikasi: iPhone tanpa token "Safari/" (WKWebView) atau aplikasi yang dikenali / Android WebView ("; wv)") */
