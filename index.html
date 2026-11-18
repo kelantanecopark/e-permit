@@ -1339,7 +1339,7 @@ function statusCard(a){
         ${o.arahan ? `<div class="arahan">${esc(o.arahan)}</div>` : ''}
         <div class="pay-sub" style="margin-top:10px">Selepas membuat bayaran, sila muat naik salinan resit di bawah. Terima kasih.</div></div>
       <form class="pay-form" data-pay="${esc(a.ref)}" novalidate>
-        <h4>Hantar Pengesahan Bayaran</h4>
+        <h4>Pengesahan Bayaran</h4>
         <div class="grid g2">
           <div class="field"><label>No. Resit Bayaran <span class="req">*</span></label><input class="input" name="resit" required autocomplete="off" placeholder="No. resit daripada Serambi Pay"><div class="hint">Bukan No. Rujukan permohonan (EP-…).</div></div>
           <div class="field"><label>Tarikh Bayaran <span class="req">*</span></label><input class="input" type="date" name="tarikh" required max="${today()}"></div>
@@ -1349,7 +1349,7 @@ function statusCard(a){
             <div class="hint">Gambar akan dikecilkan secara automatik. PDF maksimum 5 MB.</div></div>
           <div class="field span2"><label>Catatan</label><input class="input" name="catatan" placeholder="Pilihan"></div>
         </div>
-        <div class="actions"><button class="btn btn-primary" type="submit">Hantar Pengesahan Bayaran →</button></div>
+        <div class="actions"><button class="btn btn-primary" type="submit">Hantar →</button></div>
       </form>`;
   }
   return `<div class="st-card"><div class="st-head"><div><h3 class="mono">${esc(a.ref)}</h3></div>${badge(s)}</div>
