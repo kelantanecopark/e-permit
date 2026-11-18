@@ -116,11 +116,21 @@ main{max-width:1200px;margin:22px auto 60px;padding:0 24px;position:relative;z-i
 .input,select.input,textarea.input{width:100%;padding:10px 12px;border:1px solid #cdd8d1;border-radius:10px;background:#fff;transition:border .15s,box-shadow .15s;outline:none}
 textarea.input{resize:vertical;min-height:70px}
 /* No. telefon dengan kod negara */
-.tel-group{display:flex;align-items:stretch;gap:8px}
+.tel-group{display:flex;align-items:stretch;gap:8px;position:relative}
+.cc-menu{position:fixed;z-index:200;width:min(320px,calc(100vw - 24px));max-height:300px;overflow:auto;background:#fff;border:1px solid #dfe5e1;border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.14);padding:6px}
+.cc-opt{display:flex;align-items:center;gap:10px;width:100%;padding:8px 10px;border:0;background:none;border-radius:8px;font:inherit;font-size:14px;color:var(--ink);cursor:pointer;text-align:left}
+.cc-opt:hover,.cc-opt:focus{background:#f2f5f3;outline:none}
+.cc-opt.on{background:var(--mint);font-weight:600}
+.cc-opt .flag{width:22px;height:22px;flex:0 0 22px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
+.cc-opt .flag svg{display:block;width:100%;height:100%}
+.cc-opt .nm{flex:1}
+.cc-opt .dc{color:var(--muted);font-variant-numeric:tabular-nums}
+.cc-sep{height:1px;background:#e6ebe8;margin:4px 6px}
+.flag .iso{display:grid;place-items:center;width:100%;height:100%;background:var(--forest-2);color:#fff;font-size:9px;font-weight:700}
 .tel-group .input{flex:1;min-width:0}
 .tel-group .tel-cc{position:relative;display:flex;align-items:center;gap:10px;margin:0;padding:0 16px;font-weight:400;background:#f2f2f2;border:1px solid transparent;border-radius:12px;flex:0 0 auto;cursor:pointer;color:#8a8a8a;font-size:16px;transition:background .15s}
 .tel-cc:hover{background:#e9ece9}
-.tel-cc:focus-within{border-color:var(--leaf);box-shadow:0 0 0 4px rgba(47,143,91,.14)}
+.tel-cc:focus-visible,.tel-cc[aria-expanded="true"]{outline:none;border-color:var(--leaf);box-shadow:0 0 0 4px rgba(47,143,91,.14)}
 .tel-cc .flag{width:26px;height:26px;border-radius:50%;overflow:hidden;flex:0 0 26px;display:grid;place-items:center;box-shadow:0 0 0 1px rgba(0,0,0,.06)}
 .tel-cc .flag svg{display:block;width:100%;height:100%}
 .tel-cc .flag.iso{background:var(--forest-2);color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.03em}
@@ -524,8 +534,9 @@ footer.site{color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.6)}
         <div class="field"><label>Nama Persatuan / Kelab / Syarikat</label><input class="input" name="persatuan" autocomplete="section-pemohon organization" placeholder="Pilihan"></div>
         <div class="field"><label for="telNo">No. Telefon <span class="req">*</span></label>
           <div class="tel-group">
-            <label class="tel-cc" title="Pilih kod negara"><span class="flag" id="telIso"></span><span class="dial" id="telDial">+60</span>
-              <select id="telCC" aria-label="Kod negara"></select></label>
+            <div class="tel-cc" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false" aria-label="Pilih kod negara" title="Pilih kod negara"><span class="flag" id="telIso"></span><span class="dial" id="telDial">+60</span>
+              <select id="telCC" aria-label="Kod negara" tabindex="-1" hidden></select></div>
+            <div class="cc-menu" id="ccMenu" role="listbox" aria-label="Kod negara" hidden></div>
             <input class="input" id="telNo" name="telefon" autocomplete="section-pemohon tel-national" required placeholder="12 3456 789" inputmode="tel"></div></div>
         <div class="field span2"><label>Alamat <span class="req">*</span></label><textarea class="input" name="alamat" autocomplete="section-pemohon street-address" required rows="2"></textarea></div>
         <div class="field"><label>Emel</label><input class="input" type="email" name="emel" autocomplete="section-pemohon email" placeholder="nama@contoh.com"></div>
@@ -808,14 +819,63 @@ const NEGARA = [['MY','Malaysia','60'],['SG','Singapura','65'],['BN','Brunei','6
   ['CH','Switzerland','41'],['TW','Taiwan','886'],['TR','Turki','90'],['AE','Emiriah Arab Bersatu','971'],['GB','United Kingdom','44'],['US','Amerika Syarikat','1']];
 const CC_OPTS = NEGARA.map(([iso,n,d],i)=>`${i===10?'<option disabled>──────────</option>':''}<option value="${iso}"${iso==='MY'?' selected':''}>${n} (+${d})</option>`).join('');
 const negaraOf = iso => NEGARA.find(x => x[0] === iso) || NEGARA[0];
-/* Bendera bulat: Malaysia (Jalur Gemilang) dilukis SVG; negara lain dipaparkan sebagai kod ISO */
-const FLAG_MY = '<svg viewBox="0 0 28 28" aria-hidden="true">' +
-  Array.from({length:14}, (_, i) => `<rect y="${i*2}" width="28" height="2" fill="${i % 2 ? '#fff' : '#cc0001'}"/>`).join('') +
-  '<rect width="16" height="16" fill="#010066"/><circle cx="7" cy="8" r="4.6" fill="#fc0"/><circle cx="8.3" cy="8" r="3.8" fill="#010066"/>' +
-  '<path fill="#fc0" d="M12.6 4.8l.55 1.95 1.9-.7-1.15 1.68 1.75.98-2 .2.3 2-1.35-1.48-1.35 1.48.3-2-2-.2 1.75-.98-1.15-1.68 1.9.7z"/></svg>';
+/* ---------- BENDERA NEGARA (SVG ringkas, dipaparkan dalam bulatan) ---------- */
+const FLAG = (() => {
+  const W = 28, n = v => +v.toFixed(2);
+  const R = (x, y, w, h, f) => `<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" fill="${f}"/>`;
+  const C = (cx, cy, r, f) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${f}"/>`;
+  const S = (cx, cy, r, f) => { const p = []; for (let i = 0; i < 10; i++){ const a = -Math.PI/2 + i*Math.PI/5, rr = i % 2 ? r*.4 : r; p.push(n(cx + rr*Math.cos(a)) + ',' + n(cy + rr*Math.sin(a))); } return `<polygon points="${p.join(' ')}" fill="${f}"/>`; };
+  const H = (cs, w = cs.map(() => 1)) => { const t = w.reduce((a, b) => a + b, 0); let y = 0; return cs.map((c, i) => { const h = W*w[i]/t, s = R(0, y, W, h + .05, c); y += h; return s; }).join(''); };
+  const V = (cs, w = cs.map(() => 1)) => { const t = w.reduce((a, b) => a + b, 0); let x = 0; return cs.map((c, i) => { const v = W*w[i]/t, s = R(x, 0, v + .05, W, c); x += v; return s; }).join(''); };
+  const UJ = R(0,0,28,28,'#012169') + '<path d="M0 0L28 28M28 0L0 28" stroke="#fff" stroke-width="6"/><path d="M0 0L28 28M28 0L0 28" stroke="#C8102E" stroke-width="2"/>' +
+    '<path d="M14 0V28M0 14H28" stroke="#fff" stroke-width="8"/><path d="M14 0V28M0 14H28" stroke="#C8102E" stroke-width="4.5"/>';
+  const ujKecil = `<g transform="scale(.5)">${UJ}</g>`;
+  const qa = (() => { let p = '0,0 '; for (let i = 0; i < 9; i++){ const y = i*28/9; p += `10,${n(y)} 13,${n(y + 14/9)} `; } return p + '10,28 0,28'; })();
+  const F = {
+    MY: H(Array.from({length:14}, (_, i) => i % 2 ? '#fff' : '#CC0001')) + R(0,0,16,16,'#010066') + C(7,8,4.6,'#FC0') + C(8.3,8,3.8,'#010066') + S(12.6,8,3.1,'#FC0'),
+    SG: H(['#EF3340','#fff']) + C(7,7,4.2,'#fff') + C(8.8,7,4.2,'#EF3340') + [[12.3,3.8],[14.4,5.4],[13.6,8],[11,8],[10.2,5.4]].map(([x,y]) => S(x,y,1.05,'#fff')).join(''),
+    BN: R(0,0,28,28,'#F7E017') + '<path d="M0 6L28 16V22L0 12Z" fill="#fff"/><path d="M0 12L28 22V27L0 17Z" fill="#000"/>' + C(14,14,4.2,'#CF1126'),
+    ID: H(['#CE1126','#fff']),
+    TH: H(['#A51931','#F4F5F8','#2D2A4A','#F4F5F8','#A51931'], [1,1,2,1,1]),
+    PH: H(['#0038A8','#CE1126']) + '<polygon points="0,0 15,14 0,28" fill="#fff"/>' + C(5,14,2.8,'#FCD116'),
+    VN: R(0,0,28,28,'#DA251D') + S(14,14.6,7.5,'#FF0'),
+    KH: H(['#032EA1','#E00025','#032EA1'], [1,2,1]) + R(8,12,12,5,'#fff') + R(11,9.5,6,3,'#fff') + R(13,7.5,2,2.5,'#fff'),
+    MM: H(['#FECB00','#34B233','#EA2839']) + S(14,15,8.5,'#fff'),
+    LA: H(['#CE1126','#002868','#CE1126'], [1,2,1]) + C(14,14,4.8,'#fff'),
+    AU: R(0,0,28,28,'#012169') + ujKecil + S(7,21.5,3.2,'#fff') + [[21,6],[17.5,13],[24,12.5],[21,23]].map(([x,y]) => S(x,y,1.7,'#fff')).join(''),
+    BD: R(0,0,28,28,'#006A4E') + C(12.5,14,6.6,'#F42A41'),
+    CA: V(['#D52B1E','#fff','#D52B1E'], [1,2,1]) + S(14,13.5,6.5,'#D52B1E') + R(13.4,17,1.2,4.5,'#D52B1E'),
+    CN: R(0,0,28,28,'#EE1C25') + S(7,7.5,4.5,'#FF0') + [[12.5,3.5],[14.8,6],[14.8,9.5],[12.5,12]].map(([x,y]) => S(x,y,1.3,'#FF0')).join(''),
+    FR: V(['#002395','#fff','#ED2939']),
+    DE: H(['#000','#DD0000','#FFCE00']),
+    HK: R(0,0,28,28,'#DE2910') + [0,1,2,3,4].map(k => { const a = -Math.PI/2 + k*2*Math.PI/5; return C(n(14 + 4.6*Math.cos(a)), n(14 + 4.6*Math.sin(a)), 3.3, '#fff'); }).join('') + C(14,14,1.2,'#DE2910'),
+    IN: H(['#FF9933','#fff','#138808']) + '<circle cx="14" cy="14" r="3.6" fill="none" stroke="#000080" stroke-width="1"/>' + C(14,14,.9,'#000080'),
+    IT: V(['#009246','#fff','#CE2B37']),
+    JP: R(0,0,28,28,'#fff') + C(14,14,7.5,'#BC002D'),
+    KR: R(0,0,28,28,'#fff') + '<path d="M8 14a6 6 0 0 1 12 0z" fill="#C60C30"/><path d="M8 14a6 6 0 0 0 12 0z" fill="#003478"/>' + C(11,14,3,'#C60C30') + C(17,14,3,'#003478') +
+      '<g fill="#000"><rect x="3" y="4" width="5" height="1.2" transform="rotate(-35 5.5 4.6)"/><rect x="3.8" y="6.2" width="5" height="1.2" transform="rotate(-35 6.3 6.8)"/>' +
+      '<rect x="20" y="4" width="5" height="1.2" transform="rotate(35 22.5 4.6)"/><rect x="19.2" y="6.2" width="5" height="1.2" transform="rotate(35 21.7 6.8)"/>' +
+      '<rect x="3" y="22.8" width="5" height="1.2" transform="rotate(35 5.5 23.4)"/><rect x="3.8" y="20.6" width="5" height="1.2" transform="rotate(35 6.3 21.2)"/>' +
+      '<rect x="20" y="22.8" width="5" height="1.2" transform="rotate(-35 22.5 23.4)"/><rect x="19.2" y="20.6" width="5" height="1.2" transform="rotate(-35 21.7 21.2)"/></g>',
+    NL: H(['#AE1C28','#fff','#21468B']),
+    NZ: R(0,0,28,28,'#012169') + ujKecil + [[20,7,2.1],[16.5,14,2.1],[23.5,13,2.1],[20,22,2.4]].map(([x,y,r]) => S(x,y,r+.6,'#fff') + S(x,y,r,'#C8102E')).join(''),
+    PK: V(['#fff','#01411C'], [1,3]) + C(17.5,14,6.3,'#fff') + C(19.3,12.4,5.6,'#01411C') + S(20.8,11.3,2.2,'#fff'),
+    QA: R(0,0,28,28,'#8A1538') + `<polygon points="${qa}" fill="#fff"/>`,
+    SA: R(0,0,28,28,'#006C35') + R(6,9,16,4,'#fff') + R(7,17,14,1.3,'#fff') + R(19,16.2,1.3,3,'#fff'),
+    ES: H(['#AA151B','#F1BF00','#AA151B'], [1,2,1]) + R(7,11,4,6,'#AA151B'),
+    CH: R(0,0,28,28,'#DA291C') + R(11.5,6,5,16,'#fff') + R(6,11.5,16,5,'#fff'),
+    TW: R(0,0,28,28,'#FE0000') + R(0,0,15,15,'#000095') + S(7.5,7.5,5,'#fff') + C(7.5,7.5,2.8,'#000095') + C(7.5,7.5,2.2,'#fff'),
+    TR: R(0,0,28,28,'#E30A17') + C(11,14,6.5,'#fff') + C(12.8,14,5.2,'#E30A17') + S(19,14,2.9,'#fff'),
+    AE: H(['#00732F','#fff','#000']) + R(0,0,8,28,'#FF0000'),
+    GB: UJ,
+    US: H(Array.from({length:13}, (_, i) => i % 2 ? '#fff' : '#B22234')) + R(0,0,13,15,'#3C3B6E') +
+      [2.5,6.5,10.5].flatMap(x => [3,7.5,12].map(y => C(x,y,.9,'#fff'))).join('')
+  };
+  return iso => F[iso] ? `<svg viewBox="0 0 28 28" aria-hidden="true">${F[iso]}</svg>` : `<span class="iso">${iso}</span>`;
+})();
 function ccShow(sel){
-  const [iso,,d] = negaraOf(sel.value), cc = sel.closest('.tel-cc'), f = $('.flag',cc);
-  f.classList.toggle('iso', iso !== 'MY'); f.innerHTML = iso === 'MY' ? FLAG_MY : iso;
+  const [iso,,d] = negaraOf(sel.value), cc = sel.closest('.tel-cc');
+  $('.flag',cc).innerHTML = FLAG(iso);
   $('.dial',cc).textContent = '+' + d;
 }
 // Nilai disimpan: Malaysia kekal format tempatan (cth. 012-3456789); negara lain "+kod nombor" (tanpa 0 di hadapan).
@@ -1114,6 +1174,38 @@ function telUpdate(){
 telCC.addEventListener('change', ()=>{ telUpdate(); form.telefon.classList.remove('invalid'); form.telefon.focus(); if ($('#mgpSama').checked) syncMgpSama(); });
 form.addEventListener('reset', ()=>setTimeout(telUpdate));
 telUpdate();                                                   // lukis bendera awal
+/* Senarai pilihan negara dengan bendera (menggantikan dropdown biasa yang tidak boleh papar imej) */
+const ccMenu = $('#ccMenu'), ccBtn = telCC.closest('.tel-cc');
+ccMenu.innerHTML = NEGARA.map(([iso,nm,d], i) => `${i === 10 ? '<div class="cc-sep"></div>' : ''}<button type="button" class="cc-opt" role="option" data-iso="${iso}"><span class="flag">${FLAG(iso)}</span><span class="nm">${esc(nm)}</span><span class="dc">+${d}</span></button>`).join('');
+function ccOpen(on){
+  ccMenu.hidden = !on; ccBtn.setAttribute('aria-expanded', on);
+  if (!on) return;
+  // kedudukan tetap (fixed) di bawah butang supaya tidak terpotong oleh kad borang; skrol halaman jika ruang bawah tidak cukup
+  let r = ccBtn.getBoundingClientRect();
+  ccOpen.at = Date.now();                                       // abaikan peristiwa skrol yang dicetuskan di sini
+  if (innerHeight - r.bottom < 260){ scrollBy(0, r.bottom - innerHeight + 320); r = ccBtn.getBoundingClientRect(); }
+  ccMenu.style.left = Math.max(12, Math.min(r.left, innerWidth - ccMenu.offsetWidth - 12)) + 'px';
+  ccMenu.style.top = (r.bottom + 6) + 'px';
+  ccMenu.style.maxHeight = Math.max(180, Math.min(300, innerHeight - r.bottom - 18)) + 'px';
+  const cur = ccMenu.querySelector(`[data-iso="${telCC.value}"]`);
+  ccMenu.querySelectorAll('.cc-opt').forEach(b => { b.classList.toggle('on', b === cur); b.setAttribute('aria-selected', b === cur); });
+  (cur || ccMenu.querySelector('.cc-opt')).focus(); if (cur) cur.scrollIntoView({block:'nearest'});
+}
+ccBtn.addEventListener('click', () => ccOpen(ccMenu.hidden));
+ccBtn.addEventListener('keydown', e => { if (['Enter',' ','ArrowDown'].includes(e.key)){ e.preventDefault(); ccOpen(true); } });
+ccMenu.addEventListener('click', e => {
+  const b = e.target.closest('.cc-opt'); if (!b) return;
+  ccOpen(false); telCC.value = b.dataset.iso; telCC.dispatchEvent(new Event('change'));
+});
+ccMenu.addEventListener('keydown', e => {
+  const its = [...ccMenu.querySelectorAll('.cc-opt')], i = its.indexOf(document.activeElement);
+  if (e.key === 'ArrowDown'){ e.preventDefault(); its[Math.min(i + 1, its.length - 1)].focus(); }
+  else if (e.key === 'ArrowUp'){ e.preventDefault(); its[Math.max(i - 1, 0)].focus(); }
+  else if (e.key === 'Escape' || e.key === 'Tab'){ ccOpen(false); if (e.key === 'Escape') ccBtn.focus(); }
+});
+document.addEventListener('click', e => { if (!ccMenu.hidden && !e.target.closest('.tel-group')) ccOpen(false); });
+addEventListener('scroll', e => { if (!ccMenu.hidden && !ccMenu.contains(e.target) && Date.now() - (ccOpen.at || 0) > 400) ccOpen(false); }, true);
+addEventListener('resize', () => { if (!ccMenu.hidden) ccOpen(false); });
 const telValue = () => telJoin(telCC.value, form.telefon.value);
 const telValid = () => telOk(telCC.value, form.telefon.value);
 
