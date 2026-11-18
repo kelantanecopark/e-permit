@@ -116,15 +116,15 @@ main{max-width:1200px;margin:22px auto 60px;padding:0 24px;position:relative;z-i
 .input,select.input,textarea.input{width:100%;padding:10px 12px;border:1px solid #cdd8d1;border-radius:10px;background:#fff;transition:border .15s,box-shadow .15s;outline:none}
 textarea.input{resize:vertical;min-height:70px}
 /* No. telefon dengan kod negara */
-.tel-group{display:flex;align-items:stretch;border:1px solid #cdd8d1;border-radius:10px;background:#fff;transition:border .15s,box-shadow .15s}
-.tel-group:focus-within{border-color:var(--leaf);box-shadow:0 0 0 4px rgba(47,143,91,.14)}
-.tel-group:has(.invalid){border-color:var(--red);box-shadow:0 0 0 4px rgba(179,38,30,.1)}
-.tel-group .input{border:0;box-shadow:none!important;border-radius:0 10px 10px 0;min-width:0}
-.tel-group .tel-cc{position:relative;display:flex;align-items:center;gap:7px;margin:0;padding:0 10px 0 12px;font-weight:400;border-right:1px solid #e1e8e3;background:#f6f9f7;border-radius:10px 0 0 10px;flex:0 0 auto;cursor:pointer;color:var(--ink);font-size:14px}
-.tel-cc:hover{background:var(--mint)}
-.tel-cc .iso{font-size:10.5px;font-weight:700;letter-spacing:.04em;color:#fff;background:var(--forest-2);border-radius:4px;padding:2px 5px;line-height:1.2}
-.tel-cc .dial{font-weight:600;font-variant-numeric:tabular-nums}
-.tel-cc svg{color:var(--muted)}
+.tel-group{display:flex;align-items:stretch;gap:8px}
+.tel-group .input{flex:1;min-width:0}
+.tel-group .tel-cc{position:relative;display:flex;align-items:center;gap:10px;margin:0;padding:0 16px;font-weight:400;background:#f2f2f2;border:1px solid transparent;border-radius:12px;flex:0 0 auto;cursor:pointer;color:#8a8a8a;font-size:16px;transition:background .15s}
+.tel-cc:hover{background:#e9ece9}
+.tel-cc:focus-within{border-color:var(--leaf);box-shadow:0 0 0 4px rgba(47,143,91,.14)}
+.tel-cc .flag{width:26px;height:26px;border-radius:50%;overflow:hidden;flex:0 0 26px;display:grid;place-items:center;box-shadow:0 0 0 1px rgba(0,0,0,.06)}
+.tel-cc .flag svg{display:block;width:100%;height:100%}
+.tel-cc .flag.iso{background:var(--forest-2);color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.03em}
+.tel-cc .dial{font-variant-numeric:tabular-nums}
 .tel-cc select{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;font-size:16px}
 .input:focus{border-color:var(--leaf);box-shadow:0 0 0 4px rgba(47,143,91,.14)}
 .input.invalid{border-color:var(--red);box-shadow:0 0 0 4px rgba(179,38,30,.1)}
@@ -524,10 +524,9 @@ footer.site{color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.6)}
         <div class="field"><label>Nama Persatuan / Kelab / Syarikat</label><input class="input" name="persatuan" autocomplete="section-pemohon organization" placeholder="Pilihan"></div>
         <div class="field"><label for="telNo">No. Telefon <span class="req">*</span></label>
           <div class="tel-group">
-            <label class="tel-cc" title="Pilih kod negara"><span class="iso" id="telIso">MY</span><span class="dial" id="telDial">+60</span>
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+            <label class="tel-cc" title="Pilih kod negara"><span class="flag" id="telIso"></span><span class="dial" id="telDial">+60</span>
               <select id="telCC" aria-label="Kod negara"></select></label>
-            <input class="input" id="telNo" name="telefon" autocomplete="section-pemohon tel-national" required placeholder="cth. 012-3456789" inputmode="tel"></div></div>
+            <input class="input" id="telNo" name="telefon" autocomplete="section-pemohon tel-national" required placeholder="12 3456 789" inputmode="tel"></div></div>
         <div class="field span2"><label>Alamat <span class="req">*</span></label><textarea class="input" name="alamat" autocomplete="section-pemohon street-address" required rows="2"></textarea></div>
         <div class="field"><label>Emel</label><input class="input" type="email" name="emel" autocomplete="section-pemohon email" placeholder="nama@contoh.com"></div>
       </div>
@@ -809,7 +808,16 @@ const NEGARA = [['MY','Malaysia','60'],['SG','Singapura','65'],['BN','Brunei','6
   ['CH','Switzerland','41'],['TW','Taiwan','886'],['TR','Turki','90'],['AE','Emiriah Arab Bersatu','971'],['GB','United Kingdom','44'],['US','Amerika Syarikat','1']];
 const CC_OPTS = NEGARA.map(([iso,n,d],i)=>`${i===10?'<option disabled>──────────</option>':''}<option value="${iso}"${iso==='MY'?' selected':''}>${n} (+${d})</option>`).join('');
 const negaraOf = iso => NEGARA.find(x => x[0] === iso) || NEGARA[0];
-function ccShow(sel){ const [iso,,d] = negaraOf(sel.value), cc = sel.closest('.tel-cc'); $('.iso',cc).textContent = iso; $('.dial',cc).textContent = '+' + d; }
+/* Bendera bulat: Malaysia (Jalur Gemilang) dilukis SVG; negara lain dipaparkan sebagai kod ISO */
+const FLAG_MY = '<svg viewBox="0 0 28 28" aria-hidden="true">' +
+  Array.from({length:14}, (_, i) => `<rect y="${i*2}" width="28" height="2" fill="${i % 2 ? '#fff' : '#cc0001'}"/>`).join('') +
+  '<rect width="16" height="16" fill="#010066"/><circle cx="7" cy="8" r="4.6" fill="#fc0"/><circle cx="8.3" cy="8" r="3.8" fill="#010066"/>' +
+  '<path fill="#fc0" d="M12.6 4.8l.55 1.95 1.9-.7-1.15 1.68 1.75.98-2 .2.3 2-1.35-1.48-1.35 1.48.3-2-2-.2 1.75-.98-1.15-1.68 1.9.7z"/></svg>';
+function ccShow(sel){
+  const [iso,,d] = negaraOf(sel.value), cc = sel.closest('.tel-cc'), f = $('.flag',cc);
+  f.classList.toggle('iso', iso !== 'MY'); f.innerHTML = iso === 'MY' ? FLAG_MY : iso;
+  $('.dial',cc).textContent = '+' + d;
+}
 // Nilai disimpan: Malaysia kekal format tempatan (cth. 012-3456789); negara lain "+kod nombor" (tanpa 0 di hadapan).
 function telJoin(iso, raw){
   raw = (raw || '').trim(); if (!raw || raw.startsWith('+')) return raw;
@@ -1101,10 +1109,11 @@ telCC.innerHTML = CC_OPTS;
 const telNegara = () => negaraOf(telCC.value);
 function telUpdate(){
   ccShow(telCC);
-  form.telefon.placeholder = telCC.value === 'MY' ? 'cth. 012-3456789' : 'Nombor telefon';
+  form.telefon.placeholder = telCC.value === 'MY' ? '12 3456 789' : 'Nombor telefon';
 }
 telCC.addEventListener('change', ()=>{ telUpdate(); form.telefon.classList.remove('invalid'); form.telefon.focus(); if ($('#mgpSama').checked) syncMgpSama(); });
 form.addEventListener('reset', ()=>setTimeout(telUpdate));
+telUpdate();                                                   // lukis bendera awal
 const telValue = () => telJoin(telCC.value, form.telefon.value);
 const telValid = () => telOk(telCC.value, form.telefon.value);
 
