@@ -114,6 +114,14 @@ main{max-width:1200px;margin:22px auto 60px;padding:0 24px;position:relative;z-i
 .mod-tutup h3{margin:0 0 10px;font-size:21px;color:var(--forest,#0e3b2c)}
 .mod-tutup p{margin:0 auto 22px;max-width:560px;line-height:1.6;color:var(--muted);white-space:pre-line}
 .mod-tutup .mod-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+/* Poster notis: popup yang boleh ditutup pemohon */
+.poster-modal{position:fixed;inset:0;z-index:5000;background:rgba(10,20,15,.7);display:grid;place-items:center;padding:28px 20px;animation:pmIn .2s ease}
+.poster-modal[hidden],#modLihat[hidden]{display:none}
+.pm-box{position:relative;max-width:min(92vw,720px)}
+.pm-box img{display:block;max-width:100%;max-height:calc(100vh - 56px);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.35);background:#fff}
+.pm-x{position:absolute;top:-12px;right:-12px;width:38px;height:38px;border-radius:50%;border:0;background:#fff;color:#1d2b24;font-size:18px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.3);display:grid;place-items:center}
+.pm-x:hover{background:#f0f4f1}
+@keyframes pmIn{from{opacity:0}to{opacity:1}}
 @media (max-width:640px){.kap-row{grid-template-columns:96px 1fr;}.kap-row .kap-baki{grid-column:1/-1;text-align:left;margin-top:-2px}}
 @media(max-width:860px){.g2,.g3,.g4{grid-template-columns:1fr}.span2,.span3{grid-column:auto}}
 .field label{display:block;font-size:12.5px;font-weight:600;color:#33453b;margin-bottom:6px}
@@ -516,12 +524,15 @@ footer.site{color:rgba(255,255,255,.85);text-shadow:0 1px 3px rgba(0,0,0,.6)}
 
 <main>
 <!-- ================= VIEW: PEMOHON ================= -->
+<div class="poster-modal" id="posterModal" hidden role="dialog" aria-modal="true" aria-label="Notis penutupan">
+  <div class="pm-box"><button type="button" class="pm-x" id="pmTutup" aria-label="Tutup notis">✕</button><img id="pmImg" alt="Notis penutupan"></div>
+</div>
 <section class="view active" id="view-mohon">
   <div class="card mod-tutup" id="modTutup" hidden role="status"><div class="card-body">
     <div class="mod-ikon" aria-hidden="true">🛠️</div>
     <h3>Permohonan ditutup sementara</h3>
     <p id="modMesej"></p>
-    <div class="mod-btns"><button type="button" class="btn btn-primary" data-ke="semak">Semak Status Permohonan</button><button type="button" class="btn" data-ke="hubungi">Hubungi Kami</button></div>
+    <div class="mod-btns"><button type="button" class="btn" id="modLihat" hidden>🖼️ Lihat notis</button><button type="button" class="btn btn-primary" data-ke="semak">Semak Status Permohonan</button><button type="button" class="btn" data-ke="hubungi">Hubungi Kami</button></div>
   </div></div>
   <form id="appForm" novalidate>
     <div class="card"><div class="card-body">
@@ -1105,16 +1116,25 @@ form.lokasiLain.addEventListener('input', kapSemak); form.hskLain.addEventListen
 
 /* Mod penyelenggaraan (ditetapkan pegawai dalam Sistem Pengurusan): sembunyi borang, papar mesej.
    Pelayan turut menolak permohonan semasa mod ini; Semak Status, bayaran & aduan kekal dibuka. */
-function modTutup(mesej){
+function modTutup(mesej, poster){
   $('#modMesej').textContent = mesej || '';
+  if (poster && /^data:image\/(jpeg|png|webp);base64,/.test(poster)){
+    $('#pmImg').src = poster; $('#modLihat').hidden = false; posterBuka(true);   // notis popup — pemohon boleh tutup
+  }
   $('#modTutup').hidden = false; form.hidden = true;
 }
 $('#modTutup').addEventListener('click', e => { const b = e.target.closest('[data-ke]'); if (b) show(b.dataset.ke); });
+document.body.appendChild($('#posterModal'));                  // keluar dari <main> supaya berada di atas bar menu
+function posterBuka(on){ $('#posterModal').hidden = !on; if (on) $('#pmTutup').focus(); }
+$('#pmTutup').onclick = () => posterBuka(false);
+$('#posterModal').addEventListener('click', e => { if (e.target.id === 'posterModal') posterBuka(false); });   // klik di luar gambar
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#posterModal').hidden) posterBuka(false); });
+$('#modLihat').onclick = () => posterBuka(true);
 /* Notis penutupan semasa & akan datang (cth. musim tengkujuh) — dipapar di atas borang */
 (async () => {
   try{
     const r = await api({action:'penutupan'}), L = (r && r.tutup) || [];
-    if (r && r.mod && r.mod.tutup) modTutup(r.mod.mesej);
+    if (r && r.mod && r.mod.tutup) modTutup(r.mod.mesej, r.mod.poster);
     if (!L.length) return;
     const kini = today(), box = $('#tutupNotis');
     box.innerHTML = `⛔ <b>Notis penutupan</b><ul>${L.map(z => `<li><b>${esc(z.label)}</b> ${z.dari <= kini ? 'ditutup sehingga' : `ditutup ${esc(fmtD(z.dari))} hingga`} ${esc(fmtD(z.hingga))}${z.catatan ? ` — ${esc(z.catatan)}` : ''}</li>`).join('')}</ul>` +
