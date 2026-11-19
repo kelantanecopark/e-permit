@@ -122,17 +122,10 @@ main{max-width:1200px;margin:22px auto 60px;padding:0 24px;position:relative;z-i
 .mod-tutup .mod-btns .btn:hover{background:#f4f7f5}
 .mod-tutup .mod-btns:has(#modLihat[hidden]){grid-template-columns:1fr}
 /* Poster notis: popup yang boleh ditutup pemohon */
-/* Popup kekal licin semasa halaman di belakang ditatal (telefon):
-   - tinggi TETAP (100lvh) — tidak berubah bila bar alamat pelayar timbul/hilang, jadi poster tidak "melompat" ke tengah semula
-   - poster dihadkan kepada skrin TERKECIL (100svh) — sentiasa muat, saiz tidak berubah
-   - lapisan GPU sendiri — tidak dilukis semula bersama halaman yang bergerak */
-.poster-modal{position:fixed;left:0;right:0;top:0;height:100vh;height:100lvh;z-index:5000;background:rgba(10,20,15,.7);display:grid;place-items:center;padding:28px 20px;animation:pmIn .2s ease;
-  transform:translateZ(0);-webkit-transform:translateZ(0);will-change:transform;-webkit-backface-visibility:hidden;backface-visibility:hidden;contain:layout paint}
+.poster-modal{position:fixed;inset:0;z-index:5000;background:rgba(10,20,15,.7);display:grid;place-items:center;padding:28px 20px;animation:pmIn .2s ease}
 .poster-modal[hidden],#modLihat[hidden]{display:none}
 .pm-box{position:relative;max-width:min(92vw,720px)}
-.pm-box img{display:block;max-width:100%;max-height:calc(100vh - 56px);max-height:calc(100svh - 56px);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.35);background:#fff}
-/* Semasa popup dibuka: matikan kesan kabur bar atas (mahal dilukis semula ketika menatal) */
-body.pm-buka .topbar{-webkit-backdrop-filter:none;backdrop-filter:none;background:rgba(8,36,26,.98)}
+.pm-box img{display:block;max-width:100%;max-height:calc(100vh - 56px);border-radius:14px;box-shadow:0 12px 40px rgba(0,0,0,.35);background:#fff}
 .pm-x{position:absolute;top:-12px;right:-12px;width:38px;height:38px;border-radius:50%;border:0;background:#fff;color:#1d2b24;font-size:18px;font-weight:700;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.3);display:grid;place-items:center}
 .pm-x:hover{background:#f0f4f1}
 @keyframes pmIn{from{opacity:0}to{opacity:1}}
@@ -1141,7 +1134,7 @@ function modTutup(mesej, poster){
 }
 $('#modTutup').addEventListener('click', e => { const b = e.target.closest('[data-ke]'); if (b) show(b.dataset.ke); });
 document.body.appendChild($('#posterModal'));                  // keluar dari <main> supaya berada di atas bar menu
-function posterBuka(on){ $('#posterModal').hidden = !on; document.body.classList.toggle('pm-buka', on); if (on) $('#pmTutup').focus({preventScroll:true}); }
+function posterBuka(on){ $('#posterModal').hidden = !on; if (on) $('#pmTutup').focus(); }
 $('#pmTutup').onclick = () => posterBuka(false);
 $('#posterModal').addEventListener('click', e => { if (e.target.id === 'posterModal') posterBuka(false); });   // klik di luar gambar
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#posterModal').hidden) posterBuka(false); });
