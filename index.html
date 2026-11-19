@@ -1359,7 +1359,11 @@ try {
       show('semak'); $('#qRef').value = qref.trim().toUpperCase(); await doSemak();
       if (!qs.has('cetak')) return;
       const b = $('#semakOut [data-print]');
-      if (b) b.click();
+      /* Telefon/tablet: cetakan mesti dimulakan oleh sentuhan pengguna (Safari menyekat window.print() automatik) —
+         tunjukkan butang Cetak Permit dan minta pengguna menekannya, bukan panel "cetakan tidak disokong". */
+      const mudahAlih = /iP(hone|ad|od)|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      if (b && mudahAlih && !DLM_BINGKAI){ b.scrollIntoView({block: 'center'}); b.focus(); toast('Tekan 🖨 Cetak Permit untuk mencetak permit.'); }
+      else if (b) b.click();
       else lapor('gagal', $('#semakOut').textContent.trim().slice(0, 200) || 'Permit belum dikeluarkan');
     });
 } catch (e) {}
