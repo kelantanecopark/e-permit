@@ -1784,7 +1784,7 @@ function dialogPdf(tajuk, mesej, butang, tindakan){
   const btn = 'display:block;width:100%;border:0;border-radius:10px;padding:12px 14px;font:600 15px system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer;margin-top:8px';
   d.innerHTML = `<div style="background:#fff;color:#1b2a22;border-radius:14px;max-width:360px;width:100%;padding:20px;font:15px/1.45 system-ui,-apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 12px 40px rgba(0,0,0,.3)">
     <div style="font-weight:700;font-size:17px;margin-bottom:6px">${tajuk}</div>
-    <div style="color:#4b5b52;margin-bottom:10px">${mesej}</div>
+    ${mesej ? `<div style="color:#4b5b52;margin-bottom:10px">${mesej}</div>` : '<div style="height:6px"></div>'}
     <button type="button" data-p="ok" style="${btn};background:#1d4d36;color:#fff">${butang}</button>
     <button type="button" data-p="tutup" style="${btn};background:#eef1ef;color:#1b2a22">Tutup</button></div>`;
   d.addEventListener('click', e => {
@@ -1800,7 +1800,7 @@ async function pdfPermitTelefon(htmlPermit, nama, cetakTerus){
   toast('Menyediakan PDF permit…');
   try{
     const blob = await janaPdfPermit(htmlPermit);
-    dialogPdf('📄 PDF permit sedia', `<b>${nama}.pdf</b><br>Saiz &amp; susun atur sama seperti cetakan komputer (A4). Tekan butang di bawah, kemudian pilih <b>Print</b> atau <b>Save to Files</b>.`,
+    dialogPdf('📄 PDF permit', '',
       'Simpan / Cetak PDF', () => serahPdf(blob, nama));
   }catch(e){
     dialogPdf('PDF tidak dapat dijana', 'Sebab: ' + String((e && e.message) || e).replace(/[<>&]/g, '') + '. Anda boleh cetak terus melalui pelayar (saiz mungkin berbeza sedikit).',
