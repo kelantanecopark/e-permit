@@ -1698,7 +1698,7 @@ function printSalinan(a){
 function lampiranA(a, saf, x){
   const {approved, WM, lulus, o, pad, cell, tick} = x, mgp = a.mgpList, ps = a.peserta;
   const wm = !approved ? '<div class="watermark" style="top:30%">' + WM + '</div>' : '';
-  const tajuk = sambungan => `<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="rujuk">No. Rujukan Permohonan: ${esc(a.ref)}</span><span>LAMPIRAN A${sambungan ? ' (sambungan)' : ''}</span></div>
+  const tajuk = sambungan => `<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="rujuk">No. Rujukan: ${esc(a.ref)}</span><span>LAMPIRAN A${sambungan ? ' (sambungan)' : ''}</span></div>
     <h4>SENARAI MALIM GUNUNG PERHUTANAN (MGP) DAN PESERTA BAGI AKTIVITI EKOPELANCONGAN (${esc(String(a.aktiviti || '').toUpperCase())})</h4>
     <h4>DI HUTAN SIMPAN KEKAL <u>${esc(a.hsk.toUpperCase())}</u></h4>`;
   const atas = `<div style="display:flex;gap:8mm;align-items:flex-start;margin-top:4px">
