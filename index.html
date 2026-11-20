@@ -1373,8 +1373,21 @@ $('#dlSalinan').onclick = ()=>{
 };
 
 /* ---------- SEMAK STATUS ---------- */
+/* No. Rujukan diformat automatik ke EP-YYYY-XXXXXXXX walaupun ditaip tanpa "-" (cth. "ep2026k7q2m9xa" / "2026K7Q2M9XA") */
+function fmtRef(v){
+  let s = String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (!s) return '';
+  if ('EP'.startsWith(s)) return s;                            // sedang menaip / memadam "E" / "EP"
+  if (s.startsWith('EP')) s = s.slice(2);
+  const thn = s.slice(0, 4), kod = s.slice(4, 16);
+  return 'EP-' + thn + (kod ? '-' + kod : '');
+}
+$('#qRef').addEventListener('input', e => {
+  const el = e.target, baru = fmtRef(el.value);
+  if (baru !== el.value){ el.value = baru; try { el.setSelectionRange(baru.length, baru.length); } catch (x) {} }
+});
 async function doSemak(){
-  const ref = $('#qRef').value.trim().toUpperCase().replace(/\s+/g,'');
+  const ref = fmtRef($('#qRef').value); $('#qRef').value = ref;
   const out = $('#semakOut');
   if(!ref){ out.innerHTML = '<div class="empty">Sila masukkan No. Rujukan permohonan.</div>'; return; }
   out.innerHTML = '<div class="empty">Menyemak…</div>';
