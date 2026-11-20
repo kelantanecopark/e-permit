@@ -499,6 +499,15 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 .pf .lampA .office .ul{height:auto!important;padding-bottom:4mm}
 .pf .lampA .office .ttd{padding-top:4mm!important}
 .pf .lampA .rujuk{font-size:calc(var(--f) * .8)!important}
+/* Semua pelayar: Lampiran A DIPUTAR dalam halaman potret A4 — SAMA 100% dengan cetakan Sistem Pengurusan Permit
+   (Sistem terpaksa memutar kerana berjalan dalam bingkai Google). Halaman potret A4 jidar 10mm (= jidar lalai cetakan Sistem). */
+@page lampR{size:A4 portrait;margin:10mm;
+  @top-left{content:""} @top-center{content:""} @top-right{content:""} @bottom-left{content:""} @bottom-center{content:""}
+  @bottom-right{content:counter(page) "/" counter(pages);font:8pt Arial,Helvetica,sans-serif;color:#444;vertical-align:middle}}
+.pf .rot-pg{page:lampR;width:188mm;height:274mm;overflow:hidden;position:relative}
+.pf .rot{position:absolute;left:0;top:0;width:274mm;height:188mm;box-sizing:border-box;padding:4mm 6mm 0;display:flex;flex-direction:column;justify-content:flex-start;
+  transform-origin:0 0;transform:translateY(274mm) rotate(-90deg)}
+.pf .rot>*{flex:none}
 .pf.saf .rot-pg{page:auto;width:150mm;height:195mm;overflow:hidden;position:relative}
 .pf.saf .rot{position:absolute;left:0;top:0;width:195mm;height:150mm;box-sizing:border-box;padding:2mm 3mm 0;display:flex;flex-direction:column;
   transform-origin:0 0;transform:translateY(195mm) rotate(-90deg);--f:9pt}
@@ -1710,8 +1719,7 @@ function lampiranA(a, saf, x){
   return kump.map((rows, g) => {
     const isi = `${wm}${tajuk(g > 0)}${g ? '' : atas}${peserta(g ? rows : pad(rows,1), s0, g > 0)}`;
     s0 += rows.length;
-    return saf ? `<section class="page p2 lamp rot-pg"><div class="lampA rot">${isi}</div></section>`
-               : `<section class="page p2 lamp"><div class="lampA">${isi}</div></section>`;
+    return `<section class="page p2 lamp rot-pg"><div class="lampA rot">${isi}</div></section>`;   // sentiasa diputar — sama dengan Sistem
   }).join('');
 }function printPermit(a, isAdmin, salinan){
   const o = a.office || {};
