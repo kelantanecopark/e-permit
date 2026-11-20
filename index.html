@@ -471,21 +471,7 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 .pf s{text-decoration-thickness:1.5px}
 /* Safari (iPhone/iPad/Mac): Borang 6 dipadatkan (9pt) supaya kekal SATU halaman — SAMA dengan Sistem Pengurusan Permit.
    Saiz ini DITETAPKAN pengguna (20/11/2026). Jangan ubah. */
-.pf.saf .p1{font-size:9pt;line-height:1.25}
-.pf.saf .p1 td,.pf.saf .p1 th{padding:2px 6px}
-.pf.saf .p1 .state{margin:0 auto 6px}
-.pf.saf .p1 .state td{padding:3px 8px}
-.pf.saf .p1 .t1,.pf.saf .p1 .t2{margin:3px 0}
-.pf.saf .p1 .gap{height:5px}
-.pf.saf .p1 p{margin:4px 0}
-.pf.saf .p1 .warn{margin:5px 0 7px;font-size:8.5pt}
-.pf.saf .p1 td[style*="height:52px"]{height:auto!important}
-.pf.saf .p1 td[style*="height:24px"]{height:auto!important}
-.pf.saf .p1 .bottom{margin-top:8px}
-.pf.saf .p1 .small-tbl{margin-bottom:4px!important}
-.pf.saf .p1 .small-tbl td{padding:2px 8px}
-.pf.saf .p1 .sign table{margin-top:8px!important}
-.pf.saf .p1 .foot{margin-top:10px;font-size:8pt}
+/* Borang 6 & Lampiran A Safari: lihat blok 'iPhone/iPad (Safari) = SAMA dengan cetakan komputer' di bawah */
 /* Lampiran A — SAMA dengan Sistem Pengurusan Permit (epLampiranHtml): fon 11pt, No. Rujukan di atas, 7 peserta di halaman pertama.
    Komputer: halaman landskap sebenar (@page lampiran). Safari mengabaikan orientasi → kandungan diputar −90° dalam halaman potret
    (ruang ≈ 150 × 195mm unit CSS, dicetak ~1.21× → fon 9pt CSS ≈ 11pt di kertas). */
@@ -508,9 +494,15 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 .pf .rot{position:absolute;left:0;top:0;width:274mm;height:188mm;box-sizing:border-box;padding:4mm 6mm 0;display:flex;flex-direction:column;justify-content:flex-start;
   transform-origin:0 0;transform:translateY(274mm) rotate(-90deg)}
 .pf .rot>*{flex:none}
-.pf.saf .rot-pg{page:auto;width:150mm;height:195mm;overflow:hidden;position:relative}
-.pf.saf .rot{position:absolute;left:0;top:0;width:195mm;height:150mm;box-sizing:border-box;padding:2mm 3mm 0;display:flex;flex-direction:column;
-  transform-origin:0 0;transform:translateY(195mm) rotate(-90deg);--f:9pt}
+/* ===== iPhone/iPad (Safari) = SAMA dengan cetakan komputer =====
+   Reka bentuk Borang 6 & Lampiran A yang SAMA seperti komputer (fon 10.5pt / 11pt, susun atur sama), dikecilkan dengan skala TETAP
+   supaya saiz di kertas = saiz komputer. Diukur daripada PDF iPhone 20/11/2026.
+   e-Permit: Safari membesarkan 1.125x, ruang cetak ~169 x 260mm (jidar lebih besar) → Borang 6 zoom 0.842 (dihadkan oleh lebar; ~95%); Lampiran A skala 0.87 (~98%). Jidar kiri/kanan disamakan dengan Sistem dalam printPermit — selepas diukur semula, zoom boleh dinaikkan ke 0.889 (100%). */
+.pf.saf{--k:.87}
+.pf.saf .p1{width:178mm;zoom:.842}
+.pf.saf .rot-pg{page:auto;width:100%;height:calc(var(--k) * 262mm);overflow:hidden;position:relative}
+.pf.saf .rot{position:absolute;left:0;top:0;width:262mm;height:180mm;box-sizing:border-box;padding:0;display:flex;flex-direction:column;justify-content:flex-start;
+  transform-origin:0 0;transform:translateY(calc(var(--k) * 262mm)) rotate(-90deg) scale(var(--k))}
 .pf.saf .rot>*{flex:none}
 </style>
 <style id="latarHutan">
@@ -1734,11 +1726,99 @@ function lampiranA(a, saf, x){
     s0 += rows.length;
     return `<section class="page p2 lamp rot-pg"><div class="lampA rot">${isi}</div></section>`;   // sentiasa diputar — sama dengan Sistem
   }).join('');
-}function printPermit(a, isAdmin, salinan){
+}/* ===== PDF Permit untuk telefon / tablet — KOD SAMA dalam Sistem Pengurusan Permit & borang e-Permit =====
+   Cetakan pelayar telefon (Safari iPhone/iPad, Chrome Android) mengira semula saiz, jidar, pengepala & pengaki sendiri,
+   jadi hasilnya berbeza daripada komputer. Di telefon/tablet permit dijana sebagai FAIL PDF A4 menggunakan reka bentuk
+   KOMPUTER yang sama (Borang 6 lebar 178mm pada kedudukan 16mm/14mm; Lampiran A 188 × 274mm pada 9.8mm/9.9mm) — PDF yang SAMA
+   pada semua peranti, tidak bergantung pada saiz Safari. Pengguna kemudian Kongsi → Print / Save to Files. */
+const PERANTI_SENTUH = /iP(hone|ad|od)|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const PDF_LIB = ['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+                 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
+let pdfLibP = null;
+function muatPdfLib(){
+  if (window.html2canvas && window.jspdf) return Promise.resolve();
+  return pdfLibP || (pdfLibP = Promise.all(PDF_LIB.map(src => new Promise((ok, gagal) => {
+    const s = document.createElement('script'); s.src = src; s.async = true;
+    s.onload = ok; s.onerror = () => gagal(new Error('tiada sambungan internet untuk menjana PDF'));
+    document.head.appendChild(s);
+  }))).catch(e => { pdfLibP = null; throw e; }));
+}
+/* htmlPermit = Borang 6 + halaman Lampiran A (reka bentuk komputer). Pulangkan Blob PDF A4. */
+async function janaPdfPermit(htmlPermit){
+  await muatPdfLib();
+  const bah = htmlPermit.split(/(?=<section class="page p2)/);
+  const hal = [{html: bah[0], lebar: 178, x: 16, y: 14}]
+    .concat(bah.slice(1).map(h => ({html: h, lebar: 188, x: 9.8, y: 9.9})));   // Lampiran A: kedudukan sama dengan cetakan komputer (diukur)
+  const doc = new window.jspdf.jsPDF({unit: 'mm', format: 'a4', orientation: 'portrait', compress: true});
+  const hos = document.createElement('div');
+  hos.setAttribute('aria-hidden', 'true');
+  hos.style.cssText = 'position:fixed;left:-30000px;top:0;background:#fff';
+  document.body.appendChild(hos);
+  try{
+    for (let i = 0; i < hal.length; i++){
+      hos.innerHTML = `<div class="pf" style="width:${hal[i].lebar}mm;background:#fff">${hal[i].html}</div>`;
+      const kanvas = await window.html2canvas(hos.firstElementChild, {scale: 3, backgroundColor: '#ffffff', logging: false});
+      if (i) doc.addPage('a4', 'portrait');
+      doc.addImage(kanvas.toDataURL('image/jpeg', .95), 'JPEG', hal[i].x, hal[i].y, hal[i].lebar, hal[i].lebar * kanvas.height / kanvas.width, undefined, 'FAST');
+    }
+  } finally { hos.remove(); }
+  return doc.output('blob');
+}
+/* Kongsi (iPhone: Print / Save to Files) → muat turun → buka tab baharu. Mesti dipanggil dalam sentuhan pengguna. */
+async function serahPdf(blob, nama){
+  const fail = nama + '.pdf';
+  try{
+    const f = new File([blob], fail, {type: 'application/pdf'});
+    if (navigator.canShare && navigator.canShare({files: [f]})){ await navigator.share({files: [f], title: nama}); return; }
+  }catch(e){ if (e && e.name === 'AbortError') return; }
+  const url = URL.createObjectURL(blob);
+  try{ const a = document.createElement('a'); a.href = url; a.download = fail; document.body.appendChild(a); a.click(); a.remove(); }
+  catch(e){ window.open(url, '_blank'); }
+  setTimeout(() => URL.revokeObjectURL(url), 120000);
+}
+/* Dialog ringkas (gaya sendiri — sama dalam kedua-dua sistem) */
+function dialogPdf(tajuk, mesej, butang, tindakan){
+  const d = document.createElement('div');
+  d.setAttribute('role', 'dialog');
+  d.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px';
+  const btn = 'display:block;width:100%;border:0;border-radius:10px;padding:12px 14px;font:600 15px system-ui,-apple-system,Segoe UI,Arial,sans-serif;cursor:pointer;margin-top:8px';
+  d.innerHTML = `<div style="background:#fff;color:#1b2a22;border-radius:14px;max-width:360px;width:100%;padding:20px;font:15px/1.45 system-ui,-apple-system,Segoe UI,Arial,sans-serif;box-shadow:0 12px 40px rgba(0,0,0,.3)">
+    <div style="font-weight:700;font-size:17px;margin-bottom:6px">${tajuk}</div>
+    <div style="color:#4b5b52;margin-bottom:10px">${mesej}</div>
+    <button type="button" data-p="ok" style="${btn};background:#1d4d36;color:#fff">${butang}</button>
+    <button type="button" data-p="tutup" style="${btn};background:#eef1ef;color:#1b2a22">Tutup</button></div>`;
+  d.addEventListener('click', e => {
+    const b = e.target.closest('[data-p]');
+    if (!b && e.target !== d) return;
+    d.remove();
+    if (b && b.dataset.p === 'ok') tindakan();
+  });
+  document.body.appendChild(d);
+}
+/* Telefon/tablet: jana PDF permit (reka bentuk komputer) dan tawarkan Simpan / Cetak. cetakTerus = sandaran jika PDF gagal. */
+async function pdfPermitTelefon(htmlPermit, nama, cetakTerus){
+  toast('Menyediakan PDF permit…');
+  try{
+    const blob = await janaPdfPermit(htmlPermit);
+    dialogPdf('📄 PDF permit sedia', `<b>${nama}.pdf</b><br>Saiz &amp; susun atur sama seperti cetakan komputer (A4). Tekan butang di bawah, kemudian pilih <b>Print</b> atau <b>Save to Files</b>.`,
+      'Simpan / Cetak PDF', () => serahPdf(blob, nama));
+  }catch(e){
+    dialogPdf('PDF tidak dapat dijana', 'Sebab: ' + String((e && e.message) || e).replace(/[<>&]/g, '') + '. Anda boleh cetak terus melalui pelayar (saiz mungkin berbeza sedikit).',
+      '🖨 Cetak terus', cetakTerus);
+  }
+}
+function printPermit(a, isAdmin, salinan){
   const o = a.office || {};
   const SAF = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
            || /^((?!chrome|chromium|crios|fxios|edg|android).)*safari/i.test(navigator.userAgent);
-  $('#printArea').classList.toggle('saf', SAF);   // Safari: Lampiran A diputar (lihat CSS .pf.saf .rot)
+  $('#printArea').classList.toggle('saf', SAF);   // Safari: skala automatik = komputer (lihat CSS .pf.saf)
+  /* Safari mematuhi jidar kiri/kanan @page (16mm → ±20.6mm di kertas) sedangkan Sistem (dalam bingkai) mendapat jidar lalai
+     Safari (±14.1mm). Samakan: 11mm ≈ 14.1mm di kertas, supaya ruang cetak e-Permit = Sistem (≈ 181.7mm lebar). */
+  if (SAF && !document.getElementById('safPg')){
+    const st = document.createElement('style'); st.id = 'safPg';
+    st.textContent = '@page{margin-left:11mm;margin-right:11mm}';
+    document.head.appendChild(st);
+  }
   const approved = normSt(a.status)==='Dikeluarkan';                       // permit sah hanya selepas bayaran disahkan
   const WM = salinan ? 'SALINAN' : (a.status==='Ditolak' ? 'DITOLAK' : 'DRAF');
   const lulus = ['Lulus','Bayaran','BayaranTidakSah','Dikeluarkan'].includes(normSt(a.status));
@@ -1793,7 +1873,13 @@ function lampiranA(a, saf, x){
 
 ` + lampiranA(a, SAF, {approved, WM, lulus, o, pad, cell, tick});
   if(!approved && !isAdmin && !salinan) return toast('Permit hanya boleh dicetak selepas bayaran disahkan');
-  cetak((salinan ? 'Salinan-Permohonan-' : 'Permit-') + a.ref, a.ref);
+  const namaFail = (salinan ? 'Salinan-Permohonan-' : 'Permit-') + a.ref;
+  /* Telefon/tablet: jana PDF A4 (reka bentuk komputer) — tidak bergantung pada saiz cetakan Safari */
+  if (PERANTI_SENTUH && !DLM_BINGKAI){
+    $('#printArea').classList.remove('saf');
+    return pdfPermitTelefon($('#printArea').innerHTML, namaFail, () => { $('#printArea').classList.toggle('saf', SAF); cetak(namaFail, a.ref); });
+  }
+  cetak(namaFail, a.ref);
 }
 
 })();
