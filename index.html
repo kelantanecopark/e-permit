@@ -1732,7 +1732,7 @@ function printPermit(a, isAdmin, salinan){
         <table class="small-tbl" style="width:100%;margin-bottom:8px"><tr><td style="width:30%">Fee RM:</td><td class="val">${cell(o.fee)}</td></tr></table>
         <table class="small-tbl" style="width:100%;margin-bottom:8px"><tr><td style="width:30%">Resit No.</td><td class="val">${cell(o.resit)}</td></tr></table>
         <table class="small-tbl" style="width:100%;margin-bottom:8px"><tr><td style="width:30%">Tarikh</td><td class="val">${cell(fmtD(o.tarikh))}</td></tr></table>
-        <table class="small-tbl" style="width:100%"><tr><td style="width:30%">Rujukan No.</td><td class="val">${cell(o.rujukan)}</td></tr></table>
+        <table class="small-tbl" style="width:100%"><tr><td style="width:30%">Rujukan No.</td><td class="val">${cell(o.rujukan || a.ref)}</td></tr></table>
       </div>
       <div class="sign">
         <div class="dots">.............................................................</div>
