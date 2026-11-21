@@ -546,6 +546,41 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 .pf.saf .rot{position:absolute;left:0;top:0;width:262mm;height:180mm;box-sizing:border-box;padding:0;display:flex;flex-direction:column;justify-content:flex-start;
   transform-origin:0 0;transform:translateY(calc(var(--k) * 262mm)) rotate(-90deg) scale(var(--k))}
 .pf.saf .rot>*{flex:none}
+/* Lampiran A — SAMA 100% dengan dokumen rujukan Word (4. Dokumen Rujukan\Borang\Lampiran A - Senarai Peserta.docx, A4 landskap).
+   Fon Arial: tajuk & kepala jadual 12pt tebal, isi jadual 10pt, kotak pejabat 9pt/10pt, nota 9pt condong. Lebar lajur, tinggi baris (6.35mm)
+   dan kedudukan diukur daripada PDF Word (mm landskap). Kandungan bermula 2mm lebih ke kiri daripada Word kerana jidar pencetak (10mm).
+   SAMA dalam kedua-dua sistem (Sistem Pengurusan Permit ↔ borang e-Permit). */
+.pf:not(.saf) .rot{padding:2.53mm 0 0 10.4mm}
+.pf.saf .rot-pg{height:calc(var(--k) * 264mm)}
+.pf.saf .rot{width:264mm;transform:translateY(calc(var(--k) * 264mm)) rotate(-90deg) scale(var(--k))}
+.pf .rot .la-kep{display:flex;justify-content:space-between;align-items:baseline;width:263.4mm;font-size:12pt;line-height:1.15}
+.pf .rot .la-kep .rujuk{font-size:9pt!important}
+.pf .rot .la-t1,.pf .rot .la-t2{width:263.4mm;text-align:center;font-size:12pt;line-height:1.15;font-weight:700;margin:0}
+.pf .rot .la-t1{margin-top:8.43mm}
+.pf .rot .la-t2{margin-top:4.33mm}
+.pf .rot .la-atas{display:flex;justify-content:space-between;align-items:flex-start;width:263.4mm;margin-top:8mm}
+.pf .rot .la-kiri{width:171.5mm;padding-top:1.83mm}
+.pf .rot .la-h{font-size:12pt;line-height:1.15;font-weight:700}
+.pf .rot .la-b{margin-top:20.33mm}
+.pf .rot .la-b2{margin-top:9.83mm}
+.pf .rot table.la-mgp,.pf .rot table.la-ps{table-layout:fixed}
+.pf .rot .la-mgp{width:171.2mm!important;margin-top:1.8mm}
+.pf .rot .la-ps{width:263.4mm!important;margin-top:1.8mm}
+.pf .rot .la-b2 + .la-ps{margin-top:3.2mm}
+.pf .rot .la-mgp th,.pf .rot .la-ps th{height:12.1mm;padding:0 1.9mm;font-size:12pt;line-height:1.15;font-weight:700;text-align:center;vertical-align:middle}
+.pf .rot .la-mgp td,.pf .rot .la-ps td{height:6.35mm;padding:0 1.9mm;font-size:10pt;line-height:1.15;vertical-align:middle}
+.pf .rot .la-ofis{position:relative;box-sizing:border-box;width:67.4mm;height:53.8mm;border:1px solid #000;padding:1.32mm 2.54mm 0;font-size:9pt;line-height:1.15;flex:none}
+.pf .rot .la-ofis-t{font-size:10pt;font-weight:700;line-height:1.15}
+.pf .rot .la-ofis table{width:65.2mm!important;margin:3.16mm 0 0 -1.34mm;table-layout:fixed}
+.pf .rot .la-ofis td{padding:0 1.9mm;font-size:9pt;line-height:1.15;vertical-align:top;height:auto}
+.pf .rot .la-ofis td + td{line-height:5mm}
+.pf .rot .la-ofis tr:first-child td{height:10.5mm}
+.pf .rot .la-ofis tr:last-child td{height:7.6mm}
+.pf .rot .la-ul{font-size:9pt;line-height:1.15;margin-top:.25mm}
+.pf .rot .la-ttd{position:absolute;left:0;right:0;top:42.85mm;text-align:center;font-size:10pt;line-height:1.15}
+.pf .rot .la-dots{width:45.1mm;margin:0 auto;overflow:hidden;white-space:nowrap;font-weight:700}
+.pf .rot .la-nota{font-size:9pt;line-height:1.15;font-style:italic;margin-top:.25mm}
+.pf .rot .la-nota div + div{margin-top:1.65mm}
 </style>
 <style id="latarHutan">
 /* Latar gambar sungai & hutan (fail sumber: 4. Dokumen Rujukan\latar-ePermit-1920x1080.jpg) */
@@ -1739,33 +1774,41 @@ function printSalinan(a){
 function lampiranA(a, saf, x){
   const {approved, WM, lulus, o, pad, cell, tick} = x, mgp = a.mgpList, ps = a.peserta;
   const wm = !approved ? '<div class="watermark" style="top:30%">' + WM + '</div>' : '';
-  const tajuk = sambungan => `<div style="display:flex;justify-content:space-between;align-items:baseline"><span class="rujuk">No. Rujukan: ${esc(a.ref)}</span><span>LAMPIRAN A${sambungan ? ' (sambungan)' : ''}</span></div>
-    <h4>SENARAI MALIM GUNUNG PERHUTANAN (MGP) DAN PESERTA BAGI AKTIVITI EKOPELANCONGAN (${esc(String(a.aktiviti || '').toUpperCase())})</h4>
-    <h4>DI HUTAN SIMPAN KEKAL <u>${esc(a.hsk.toUpperCase())}</u></h4>`;
-  const atas = `<div style="display:flex;gap:8mm;align-items:flex-start;margin-top:4px">
-      <div style="flex:1">
-        <b>A.&nbsp; MALIM GUNUNG PERHUTANAN (MGP):</b>
-        <table style="width:100%;margin-top:3px"><thead><tr><th style="width:7%">BIL.</th><th>NAMA</th><th style="width:20%">NO. MYKAD</th><th style="width:19%">NO. TELEFON</th><th style="width:16%">NO. MGP</th></tr></thead>
-        <tbody>${pad(mgp,1).map((m,i)=>`<tr><td class="center">${i+1}.</td><td>${cell(m?.nama)}</td><td>${cell(m?.ic)}</td><td>${cell(m?.tel)}</td><td>${cell(m?.mgp)}</td></tr>`).join('')}</tbody></table>
+  /* Susun atur SAMA 100% dengan dokumen Word Lampiran A (lihat CSS .la-*). No. Rujukan di baris "LAMPIRAN A" (tambahan sistem). */
+  const tajuk = sambungan => `<div class="la-kep"><span class="rujuk">No. Rujukan: ${esc(a.ref)}</span><span>LAMPIRAN A${sambungan ? ' (sambungan)' : ''}</span></div>
+    <h4 class="la-t1">SENARAI MALIM GUNUNG PERHUTANAN (MGP) DAN PESERTA BAGI AKTIVITI EKOPELANCONGAN (${esc(String(a.aktiviti || '').toUpperCase())})</h4>
+    <h4 class="la-t2">DI HUTAN SIMPAN KEKAL <u>${esc(String(a.hsk || '').toUpperCase())}</u></h4>`;
+  const kepB = sambungan => `<div class="la-h ${sambungan ? 'la-b2' : 'la-b'}">B.&nbsp; PESERTA${sambungan ? ' (sambungan)' : ''}:</div>`;
+  const atas = `<div class="la-atas">
+      <div class="la-kiri">
+        <div class="la-h">A.&nbsp; MALIM GUNUNG PERHUTANAN (MGP):</div>
+        <table class="la-mgp"><colgroup><col style="width:12.3mm"><col style="width:56.4mm"><col style="width:38.8mm"><col style="width:31.7mm"><col style="width:32mm"></colgroup>
+        <thead><tr><th>BIL.</th><th>NAMA</th><th>NO. MYKAD</th><th>NO. TELEFON</th><th>NO. MGP</th></tr></thead>
+        <tbody>${pad(mgp, 1).map((m, i) => `<tr><td class="center">${i + 1}.</td><td>${cell(m?.nama)}</td><td>${cell(m?.ic)}</td><td>${cell(m?.tel)}</td><td>${cell(m?.mgp)}</td></tr>`).join('')}</tbody></table>
+        ${kepB(false)}
       </div>
-      <table class="office">
-        <tr><td colspan="2" style="font-weight:700">UNTUK KEGUNAAN PEJABAT</td></tr>
-        <tr><td style="width:36%">Tindakan/ Keputusan</td><td>${tick(lulus)}Diluluskan<br>${tick(a.status==='Ditolak')}Ditolak</td></tr>
-        <tr><td>Permit Masuk No.</td><td><b>${o.permitNo?esc(o.permitNo):'JPNK.'}</b></td></tr>
-        <tr><td colspan="2" class="ul" style="vertical-align:top">Ulasan/ Catatan: ${esc(o.ulasan||'')}</td></tr>
-        <tr><td colspan="2" class="center ttd" style="border-top:0">…………………………………<br>Pegawai Hutan Berkuasa</td></tr>
-      </table>
+      <div class="la-ofis">
+        <div class="la-ofis-t">UNTUK KEGUNAAN PEJABAT</div>
+        <table><colgroup><col style="width:23.8mm"><col></colgroup>
+        <tr><td>Tindakan/ Keputusan</td><td>${tick(lulus)}Diluluskan<br>${tick(a.status === 'Ditolak')}Ditolak</td></tr>
+        <tr><td>Permit Masuk No.</td><td>${o.permitNo ? '<b>' + esc(o.permitNo) + '</b>' : 'JPNK.'}</td></tr></table>
+        <div class="la-ul">Ulasan/ Catatan: ${esc(o.ulasan || '')}</div>
+        <div class="la-ttd"><div class="la-dots">${'…'.repeat(14)}</div>Pegawai Hutan Berkuasa</div>
+      </div>
     </div>`;
-  const peserta = (rows, s0, sambungan) => `<div style="margin-top:4px"><b>B.&nbsp; PESERTA${sambungan ? ' (sambungan)' : ''}:</b></div>
-    <table style="width:100%;margin-top:3px"><thead><tr><th style="width:5%">BIL.</th><th style="width:22%">NAMA</th><th style="width:14%">NO. MYKAD/ PASSPORT</th><th>ALAMAT</th><th style="width:12%">NO. TELEFON</th><th style="width:12%">NO. TELEFON WARIS</th></tr></thead>
-    <tbody>${rows.map((m,i)=>`<tr><td class="center">${s0+i+1}.</td><td>${cell(m?.nama)}</td><td>${cell(m?.ic)}</td><td>${cell(m?.alamat)}</td><td>${cell(m?.tel)}</td><td>${cell(m?.waris)}</td></tr>`).join('')}</tbody></table>`;
+  const nota = `<div class="la-nota"><div>*Sila tambah lampiran sekiranya ruangan tidak mencukupi</div><div>*Potong yang tidak berkenaan</div></div>`;
+  const peserta = (rows, s0) => `<table class="la-ps"><colgroup><col style="width:11.5mm"><col style="width:58.2mm"><col style="width:38.1mm"><col style="width:92.1mm"><col style="width:30.2mm"><col style="width:33.3mm"></colgroup>
+    <thead><tr><th>BIL.</th><th>NAMA</th><th>NO. MYKAD/ PASSPORT</th><th>ALAMAT</th><th>NO. TELEFON</th><th>NO. TELEFON WARIS</th></tr></thead>
+    <tbody>${rows.map((m, i) => `<tr><td class="center">${s0 + i + 1}.</td><td>${cell(m?.nama)}</td><td>${cell(m?.ic)}</td><td>${cell(m?.alamat)}</td><td>${cell(m?.tel)}</td><td>${cell(m?.waris)}</td></tr>`).join('')}</tbody></table>${nota}`;
+  /* Halaman pertama: MGP + kotak pejabat + 7 baris peserta seperti Word (nisbah 1 MGP : 7 peserta; kurang jika MGP ramai).
+     Sambungan: hingga 12 peserta. */
   const n1 = Math.max(3, 7 - Math.max(0, mgp.length - 1)), N = 12, kump = [ps.slice(0, n1)];
   for (let i = n1; i < ps.length; i += N) kump.push(ps.slice(i, i + N));
   let s0 = 0;
   return kump.map((rows, g) => {
-    const isi = `${wm}${tajuk(g > 0)}${g ? '' : atas}${peserta(g ? rows : pad(rows,1), s0, g > 0)}`;
+    const isi = `${wm}${tajuk(g > 0)}${g ? kepB(true) : atas}${peserta(g ? rows : pad(rows, n1), s0)}`;
     s0 += rows.length;
-    return `<section class="page p2 lamp rot-pg"><div class="lampA rot">${isi}</div></section>`;   // sentiasa diputar — sama dengan Sistem
+    return `<section class="page p2 lamp rot-pg"><div class="lampA rot">${isi}</div></section>`;   // sentiasa diputar — sama dalam kedua-dua sistem
   }).join('');
 }/* ===== PDF Permit untuk telefon / tablet — KOD SAMA dalam Sistem Pengurusan Permit & borang e-Permit =====
    Cetakan pelayar telefon (Safari iPhone/iPad, Chrome Android) mengira semula saiz, jidar, pengepala & pengaki sendiri,
