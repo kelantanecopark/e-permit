@@ -1748,6 +1748,7 @@ function printSalinan(a){
   const SAF = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
            || /^((?!chrome|chromium|crios|fxios|edg|android).)*safari/i.test(navigator.userAgent);
   $('#printArea').classList.toggle('saf', SAF);
+  ffHalaman(false);                                // salinan permohonan: susun atur halaman sendiri
   let mm = 999;   // jika pengukuran gagal: dua halaman (selamat)
   try {
     const ukur = document.createElement('div');
@@ -1777,7 +1778,7 @@ function lampiranA(a, saf, x){
   /* Susun atur SAMA 100% dengan dokumen Word Lampiran A (lihat CSS .la-*). No. Rujukan di baris "LAMPIRAN A" (tambahan sistem). */
   const tajuk = sambungan => `<div class="la-kep"><span class="rujuk">No. Rujukan: ${esc(a.ref)}</span><span>LAMPIRAN A${sambungan ? ' (sambungan)' : ''}</span></div>
     <h4 class="la-t1">SENARAI MALIM GUNUNG PERHUTANAN (MGP) DAN PESERTA BAGI AKTIVITI EKOPELANCONGAN (${esc(String(a.aktiviti || '').toUpperCase())})</h4>
-    <h4 class="la-t2">DI HUTAN SIMPAN KEKAL <u>${esc(String(a.hsk || '').toUpperCase())}</u></h4>`;
+    <h4 class="la-t2">DI HUTAN SIMPAN KEKAL ${esc(String(a.hsk || '').replace(/^\s*HSK\s+/i, '').toUpperCase())}</h4>`;
   const kepB = sambungan => `<div class="la-h ${sambungan ? 'la-b2' : 'la-b'}">B.&nbsp; PESERTA${sambungan ? ' (sambungan)' : ''}:</div>`;
   const atas = `<div class="la-atas">
       <div class="la-kiri">
@@ -1800,13 +1801,13 @@ function lampiranA(a, saf, x){
   const peserta = (rows, s0) => `<table class="la-ps"><colgroup><col style="width:11.5mm"><col style="width:58.2mm"><col style="width:38.1mm"><col style="width:92.1mm"><col style="width:30.2mm"><col style="width:33.3mm"></colgroup>
     <thead><tr><th>BIL.</th><th>NAMA</th><th>NO. MYKAD/ PASSPORT</th><th>ALAMAT</th><th>NO. TELEFON</th><th>NO. TELEFON WARIS</th></tr></thead>
     <tbody>${rows.map((m, i) => `<tr><td class="center">${s0 + i + 1}.</td><td>${cell(m?.nama)}</td><td>${cell(m?.ic)}</td><td>${cell(m?.alamat)}</td><td>${cell(m?.tel)}</td><td>${cell(m?.waris)}</td></tr>`).join('')}</tbody></table>${nota}`;
-  /* Halaman pertama: MGP + kotak pejabat + 7 baris peserta seperti Word (nisbah 1 MGP : 7 peserta; kurang jika MGP ramai).
+  /* Halaman pertama: MGP + kotak pejabat + hingga 7 peserta, baris kosong TIDAK dipaparkan (nisbah 1 MGP : 7 peserta; kurang jika MGP ramai).
      Sambungan: hingga 12 peserta. */
   const n1 = Math.max(3, 7 - Math.max(0, mgp.length - 1)), N = 12, kump = [ps.slice(0, n1)];
   for (let i = n1; i < ps.length; i += N) kump.push(ps.slice(i, i + N));
   let s0 = 0;
   return kump.map((rows, g) => {
-    const isi = `${wm}${tajuk(g > 0)}${g ? kepB(true) : atas}${peserta(g ? rows : pad(rows, n1), s0)}`;
+    const isi = `${wm}${tajuk(g > 0)}${g ? kepB(true) : atas}${peserta(g ? rows : pad(rows, 1), s0)}`;
     s0 += rows.length;
     return `<section class="page p2 lamp rot-pg"><div class="lampA rot">${isi}</div></section>`;   // sentiasa diputar — sama dalam kedua-dua sistem
   }).join('');
@@ -1891,11 +1892,26 @@ async function pdfPermitTelefon(htmlPermit, nama, cetakTerus){
       '🖨 Cetak terus', cetakTerus);
   }
 }
-function printPermit(a, isAdmin, salinan){
+/* Firefox: apabila halaman bernama (page:lampR) ialah kandungan TERAKHIR, Firefox menambah satu halaman KOSONG di hujung
+   (nama halaman bertukar semula kepada 'auto'). Halaman terakhir dijadikan tanpa nama + @page jidar 10mm (= lampR) →
+   tiada halaman kosong. Firefox juga TIDAK mematuhi jidar @page bernama → SEMUA halaman guna @page tanpa nama jidar 10mm
+   (= lampR), dan Borang 6 dianjak +4mm/+6mm (position:relative) supaya kedudukannya = jidar 14/16mm (@page permit).
+   (Firefox memotong kandungan yang dianjak KELUAR kawasan halaman, jadi anjakan mesti ke dalam.)
+   Hasil SAMA dalam Sistem & e-Permit (sebelum ini e-Permit Borang 6 teranjak ke jidar 10mm). Firefox sahaja — Chrome/Edge perlukan halaman bernama untuk membuang pengepala/pengaki.
+   Kod SAMA dalam kedua-dua sistem (Sistem Pengurusan Permit ↔ borang e-Permit). */
+function ffHalaman(on){
+  const el = document.getElementById('ffPg');
+  if (!on || !/Firefox\//.test(navigator.userAgent)) { if (el) el.remove(); return; }
+  if (el) return;
+  const st = document.createElement('style'); st.id = 'ffPg';
+  st.textContent = '@page{size:A4 portrait;margin:10mm} .pf .page{page:auto!important} .pf .p1{top:4mm!important;left:6mm!important;width:178mm!important;box-sizing:border-box!important}';   // Lampiran A 10mm; Borang 6 dianjak ke 14/16mm
+  document.head.appendChild(st);
+}function printPermit(a, isAdmin, salinan){
   const o = a.office || {};
   const SAF = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
            || /^((?!chrome|chromium|crios|fxios|edg|android).)*safari/i.test(navigator.userAgent);
   $('#printArea').classList.toggle('saf', SAF);   // Safari: skala automatik = komputer (lihat CSS .pf.saf)
+  ffHalaman(true);                                 // Firefox: elak halaman kosong di hujung
   /* Safari mematuhi jidar kiri/kanan @page (16mm → ±20.6mm di kertas) sedangkan Sistem (dalam bingkai) mendapat jidar lalai
      Safari (±14.1mm). Samakan: 11mm ≈ 14.1mm di kertas, supaya ruang cetak e-Permit = Sistem (≈ 181.7mm lebar). */
   if (SAF && !document.getElementById('safPg')){
