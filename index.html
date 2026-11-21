@@ -470,43 +470,6 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 .pf .office td{border:1px solid #000;padding:2px 5px;font-size:8.5pt}
 .pf .cb{display:inline-block;width:10px;height:10px;border:1px solid #000;margin-right:4px;vertical-align:-1px;text-align:center;line-height:9px;font-size:9px;font-weight:700}
 .pf s{text-decoration-thickness:1.5px}
-/* Borang 6 — SAMA 100% dengan dokumen rujukan Word (4. Dokumen Rujukan\Borang\Borang 6 Permit Masuk HSK.docx, versi 21/11/2026 10:14).
-   Diukur daripada PDF yang dijana oleh Word: jidar kiri/kanan 25.4mm (lebar kandungan 160.2mm), kotak KERAJAAN NEGERI di atas 13.9mm,
-   fon teks 10pt / tajuk 11pt / nota kaki 8pt, jarak baris tunggal Word (1.15), baris jadual 6.35mm, garisan "* Potong..." 257mm.
-   Halaman @page permit kekal (jidar 14mm/16mm) — jidar 25.4mm dibina dengan padding 9.4mm (kiri) / 8.1mm (kanan) di dalam .p1 (PDF telefon guna kotak sama).
-   Bukan untuk sandaran Safari (.saf). SAMA dalam kedua-dua sistem (Sistem Pengurusan Permit ↔ borang e-Permit). */
-.pf:not(.saf) .p1{padding:0 8.1mm 2mm 9.4mm;font-size:10pt;line-height:1.15}
-.pf:not(.saf) .p1 td{padding:0 1.9mm;height:6.35mm;font-size:10pt;line-height:1.15;vertical-align:middle}
-.pf:not(.saf) .p1 .state{width:82.6mm;margin:0 0 6.9mm 42.8mm}
-.pf:not(.saf) .p1 .state td{padding:0 1.9mm}
-.pf:not(.saf) .p1 .state td:first-child{width:39.8mm!important}
-.pf:not(.saf) .p1 .t1,.pf:not(.saf) .p1 .t2{font-size:11pt;line-height:1.15;margin:4.1mm 0 0}
-.pf:not(.saf) .p1 .t2 + .gap{height:10.9mm}
-.pf:not(.saf) .p1 table + .gap{height:6.6mm}
-.pf:not(.saf) .p1 .t2 + .gap + table{width:93.6mm!important}
-.pf:not(.saf) .p1 .t2 + .gap + table td:first-child{width:39.6mm!important}
-.pf:not(.saf) .p1 .lbl{width:35.6mm}
-.pf:not(.saf) .p1 .box tr:nth-child(3) td{height:12.7mm}
-.pf:not(.saf) .p1 p{margin:2.9mm 0 1.45mm}
-.pf:not(.saf) .p1 .b6hsk{height:6.35mm!important}
-.pf:not(.saf) .p1 .b6kbn{height:15.4mm!important;vertical-align:top;padding-top:1mm}
-.pf:not(.saf) .p1 .warn{font-size:10pt;line-height:4.2mm;margin:2.6mm 0 5.5mm}
-.pf:not(.saf) .p1 .warn + table{width:84.1mm!important}
-.pf:not(.saf) .p1 .warn + table td:first-child{width:44.4mm!important}
-.pf:not(.saf) .p1 .bottom{display:block;position:relative;margin-top:6mm}
-.pf:not(.saf) .p1 .bottom > div:first-child{width:69.8mm!important}
-.pf:not(.saf) .p1 .small-tbl{margin-bottom:5.1mm!important}
-.pf:not(.saf) .p1 .small-tbl:last-child{margin-bottom:0!important}
-.pf:not(.saf) .p1 .small-tbl td{padding:0 1.9mm;white-space:nowrap}
-.pf:not(.saf) .p1 .small-tbl td:first-child{width:19mm!important}
-.pf:not(.saf) .p1 .small-tbl:last-child td:first-child{width:25.3mm!important}
-.pf:not(.saf) .p1 .sign{position:absolute;left:90.8mm;top:0;width:68.3mm;height:100%;text-align:left}
-.pf:not(.saf) .p1 .sign .dots{position:absolute;top:20.3mm;left:19.9mm;width:44.9mm;overflow:hidden;white-space:nowrap;letter-spacing:1px}
-.pf:not(.saf) .p1 .sign i{position:absolute;top:24.2mm;left:22.8mm;white-space:nowrap}
-.pf:not(.saf) .p1 .sign table{position:absolute;top:36.26mm;left:0;width:68.3mm!important;margin:0!important}
-.pf:not(.saf) .p1 .sign td{text-align:center}
-.pf:not(.saf) .p1 .sign td:first-child{width:27mm!important}
-.pf:not(.saf) .p1 .foot{font-size:8pt;line-height:1.15;margin:9.6mm 0.8mm 0 -0.5mm;padding-top:2.6mm}
 /* Safari (iPhone/iPad/Mac): Borang 6 dipadatkan (9pt) supaya kekal SATU halaman — SAMA dengan Sistem Pengurusan Permit.
    Saiz ini DITETAPKAN pengguna (20/11/2026). Jangan ubah. */
 /* Borang 6 & Lampiran A Safari: lihat blok 'iPhone/iPad (Safari) = SAMA dengan cetakan komputer' di bawah */
@@ -1709,7 +1672,6 @@ function printSalinan(a){
   const SAF = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
            || /^((?!chrome|chromium|crios|fxios|edg|android).)*safari/i.test(navigator.userAgent);
   $('#printArea').classList.toggle('saf', SAF);
-  ffHalaman(false);                                // salinan permohonan: susun atur halaman sendiri
   let mm = 999;   // jika pengukuran gagal: dua halaman (selamat)
   try {
     const ukur = document.createElement('div');
@@ -1770,9 +1732,6 @@ function lampiranA(a, saf, x){
    KOMPUTER yang sama (Borang 6 lebar 178mm pada kedudukan 16mm/14mm; Lampiran A 188 × 274mm pada 9.8mm/9.9mm) — PDF yang SAMA
    pada semua peranti, tidak bergantung pada saiz Safari. Pengguna kemudian Kongsi → Print / Save to Files. */
 const PERANTI_SENTUH = /iP(hone|ad|od)|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-/* Hanya Chrome/Edge (komputer) mencetak permit TEPAT seperti rujukan (PDF Edge). Pelayar lain — Firefox, Safari Mac — mengabaikan
-   sebahagian tetapan @page (pengepala/pengaki, nombor halaman, jidar), jadi permit dijana sebagai PDF (sama seperti telefon). */
-const CETAK_GUNA_PDF = PERANTI_SENTUH || !/(Chrome|Chromium|Edg)\//.test(navigator.userAgent);
 const PDF_LIB = ['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
                  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
 let pdfLibP = null;
@@ -1788,9 +1747,8 @@ function muatPdfLib(){
 async function janaPdfPermit(htmlPermit){
   await muatPdfLib();
   const bah = htmlPermit.split(/(?=<section class="page p2)/);
-  /* no = kedudukan nombor halaman "1/2" (kanan, garis dasar) — sama dengan cetakan Edge (diukur) */
-  const hal = [{html: bah[0], lebar: 178, x: 16, y: 14, no: [194, 291.2]}]
-    .concat(bah.slice(1).map(h => ({html: h, lebar: 188, x: 9.8, y: 9.9, no: [200.2, 293.3]})));   // Lampiran A: kedudukan sama dengan cetakan komputer (diukur)
+  const hal = [{html: bah[0], lebar: 178, x: 16, y: 14}]
+    .concat(bah.slice(1).map(h => ({html: h, lebar: 188, x: 9.8, y: 9.9})));   // Lampiran A: kedudukan sama dengan cetakan komputer (diukur)
   const doc = new window.jspdf.jsPDF({unit: 'mm', format: 'a4', orientation: 'portrait', compress: true});
   const hos = document.createElement('div');
   hos.setAttribute('aria-hidden', 'true');
@@ -1802,8 +1760,6 @@ async function janaPdfPermit(htmlPermit){
       const kanvas = await window.html2canvas(hos.firstElementChild, {scale: 3, backgroundColor: '#ffffff', logging: false});
       if (i) doc.addPage('a4', 'portrait');
       doc.addImage(kanvas.toDataURL('image/jpeg', .95), 'JPEG', hal[i].x, hal[i].y, hal[i].lebar, hal[i].lebar * kanvas.height / kanvas.width, undefined, 'FAST');
-      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(68, 68, 68);
-      doc.text((i + 1) + '/' + hal.length, hal[i].no[0], hal[i].no[1], {align: 'right'});
     }
   } finally { hos.remove(); }
   return doc.output('blob');
@@ -1851,24 +1807,11 @@ async function pdfPermitTelefon(htmlPermit, nama, cetakTerus){
       '🖨 Cetak terus', cetakTerus);
   }
 }
-/* Firefox: apabila halaman bernama (page:lampR) ialah kandungan TERAKHIR, Firefox menambah satu halaman KOSONG di hujung
-   (nama halaman bertukar semula kepada 'auto'). Halaman terakhir dijadikan tanpa nama + @page jidar 10mm (= lampR) →
-   kedudukan sama, tiada halaman kosong. Firefox sahaja — Chrome/Edge perlukan halaman bernama untuk membuang pengepala/pengaki.
-   Kod SAMA dalam Sistem Pengurusan Permit (epCetakTerus). */
-function ffHalaman(on){
-  const el = document.getElementById('ffPg');
-  if (!on || !/Firefox\//.test(navigator.userAgent)) { if (el) el.remove(); return; }
-  if (el) return;
-  const st = document.createElement('style'); st.id = 'ffPg';
-  st.textContent = '@page{margin:10mm} .pf .page:last-child{page:auto}';
-  document.head.appendChild(st);
-}
 function printPermit(a, isAdmin, salinan){
   const o = a.office || {};
   const SAF = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
            || /^((?!chrome|chromium|crios|fxios|edg|android).)*safari/i.test(navigator.userAgent);
   $('#printArea').classList.toggle('saf', SAF);   // Safari: skala automatik = komputer (lihat CSS .pf.saf)
-  ffHalaman(true);                                 // Firefox: elak halaman kosong di hujung
   /* Safari mematuhi jidar kiri/kanan @page (16mm → ±20.6mm di kertas) sedangkan Sistem (dalam bingkai) mendapat jidar lalai
      Safari (±14.1mm). Samakan: 11mm ≈ 14.1mm di kertas, supaya ruang cetak e-Permit = Sistem (≈ 181.7mm lebar). */
   if (SAF && !document.getElementById('safPg')){
@@ -1902,9 +1845,9 @@ function printPermit(a, isAdmin, salinan){
       <tr><td colspan="2">dan perkhidmatan serta agennya yang dinamakan berikut ini.<br>Seperti Lampiran A ( <b>${total(a)}</b> orang)</td></tr>
     </table>
     <p>adalah dibenarkan memasuki mana-mana bahagian Hutan Simpanan Kekal</p>
-    <table class="box"><tr><td class="val b6hsk" style="height:24px">${cell(a.hsk.toUpperCase())}</td></tr></table>
+    <table class="box"><tr><td class="val" style="height:24px">${cell(a.hsk.toUpperCase())}</td></tr></table>
     <p>yang ditunjukkan dengan warna merah dalam pelan di bahagian belakang permit ini bagi maksud yang berikut:</p>
-    <table class="box"><tr><td class="b6kbn" style="height:52px">Kebenaran memasuki Hutan Simpanan Kekal bagi melakukan aktiviti ${strikeAk} di
+    <table class="box"><tr><td style="height:52px">Kebenaran memasuki Hutan Simpanan Kekal bagi melakukan aktiviti ${strikeAk} di
       <b>${esc(a.lokasi)}</b>${a.kategori?` (${a.kategori})`:''}.</td></tr></table>
     <p>dan dengan tertakluk kepada syarat-syarat berikut:</p>
     <div class="warn">Perbuatan yang dilarang dalam Hutan Simpanan Kekal –<br>
@@ -1931,8 +1874,8 @@ function printPermit(a, isAdmin, salinan){
 ` + lampiranA(a, SAF, {approved, WM, lulus, o, pad, cell, tick});
   if(!approved && !isAdmin && !salinan) return toast('Permit hanya boleh dicetak selepas bayaran disahkan');
   const namaFail = (salinan ? 'Salinan-Permohonan-' : 'Permit-') + a.ref;
-  /* Telefon/tablet, Firefox, Safari Mac: jana PDF A4 (sama dengan cetakan Edge) — tidak bergantung pada tetapan cetak pelayar */
-  if (CETAK_GUNA_PDF && !DLM_BINGKAI){
+  /* Telefon/tablet: jana PDF A4 (reka bentuk komputer) — tidak bergantung pada saiz cetakan Safari */
+  if (PERANTI_SENTUH && !DLM_BINGKAI){
     $('#printArea').classList.remove('saf');
     return pdfPermitTelefon($('#printArea').innerHTML, namaFail, () => { $('#printArea').classList.toggle('saf', SAF); cetak(namaFail, a.ref); });
   }
