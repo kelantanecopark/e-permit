@@ -548,9 +548,9 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 .pf.saf .rot>*{flex:none}
 /* Lampiran A — SAMA 100% dengan dokumen rujukan Word (4. Dokumen Rujukan\Borang\Lampiran A - Senarai Peserta.docx, A4 landskap).
    Fon Arial: tajuk & kepala jadual 12pt tebal, isi jadual 10pt, kotak pejabat 9pt/10pt, nota 9pt condong. Lebar lajur, tinggi baris (6.35mm)
-   dan kedudukan diukur daripada PDF Word (mm landskap). Kandungan bermula 2mm lebih ke kiri daripada Word kerana jidar pencetak (10mm).
+   dan kedudukan diukur daripada PDF Word (mm landskap). Kandungan diletak di TENGAH halaman (ruang atas = bawah kertas potret) atas permintaan pengguna 23/11/2026.
    SAMA dalam kedua-dua sistem (Sistem Pengurusan Permit ↔ borang e-Permit). */
-.pf:not(.saf) .rot{padding:2.53mm 0 0 10.4mm}
+.pf:not(.saf) .rot{padding:2.53mm 0 0 3.25mm}   /* kiri 3.25mm → ruang atas = bawah halaman A4 (±16.9mm) — pengguna minta 23/11/2026 */
 .pf.saf .rot-pg{height:calc(var(--k) * 264mm)}
 .pf.saf .rot{width:264mm;transform:translateY(calc(var(--k) * 264mm)) rotate(-90deg) scale(var(--k))}
 .pf .rot .la-kep{display:flex;justify-content:space-between;align-items:baseline;width:263.4mm;font-size:12pt;line-height:1.15}
@@ -1817,6 +1817,9 @@ function lampiranA(a, saf, x){
    KOMPUTER yang sama (Borang 6 lebar 178mm pada kedudukan 16mm/14mm; Lampiran A 188 × 274mm pada 9.8mm/9.9mm) — PDF yang SAMA
    pada semua peranti, tidak bergantung pada saiz Safari. Pengguna kemudian Kongsi → Print / Save to Files. */
 const PERANTI_SENTUH = /iP(hone|ad|od)|Android/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+/* Permit dicetak melalui PDF A4 jana sistem di SEMUA peranti (komputer & telefon) — susun atur SAMA tanpa bergantung pada pelayar,
+   saiz kertas, skala atau pemandu pencetak (pengguna minta 23/11/2026). Cetak terus pelayar = sandaran jika PDF gagal dijana. */
+const CETAK_GUNA_PDF = true;   // telefon: PDF (Simpan / Cetak); komputer: cetak terus imej halaman yang sama (cetakImejPermit)
 const PDF_LIB = ['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
                  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
 let pdfLibP = null;
@@ -1828,33 +1831,64 @@ function muatPdfLib(){
     document.head.appendChild(s);
   }))).catch(e => { pdfLibP = null; throw e; }));
 }
-/* htmlPermit = Borang 6 + halaman Lampiran A (reka bentuk komputer). Pulangkan Blob PDF A4. */
-async function janaPdfPermit(htmlPermit){
+/* htmlPermit = Borang 6 + halaman Lampiran A (reka bentuk komputer). Pulangkan imej setiap halaman A4:
+   [{src, x, y, w, h}] dalam mm — Borang 6 lebar 178mm pada (16,14); Lampiran A 188mm pada (9.8,9.9) (diukur, = cetakan komputer). */
+async function janaHalamanPermit(htmlPermit){
+  ffHalaman(false);                                // anjakan Borang 6 khas cetakan Firefox TIDAK boleh masuk ke dalam imej
   await muatPdfLib();
   const bah = htmlPermit.split(/(?=<section class="page p2)/);
   const hal = [{html: bah[0], lebar: 178, x: 16, y: 14}]
-    .concat(bah.slice(1).map(h => ({html: h, lebar: 188, x: 9.8, y: 9.9})));   // Lampiran A: kedudukan sama dengan cetakan komputer (diukur)
-  const doc = new window.jspdf.jsPDF({unit: 'mm', format: 'a4', orientation: 'portrait', compress: true});
+    .concat(bah.slice(1).map(h => ({html: h, lebar: 188, x: 9.8, y: 9.9})));
   const hos = document.createElement('div');
   hos.setAttribute('aria-hidden', 'true');
   hos.style.cssText = 'position:fixed;left:-30000px;top:0;background:#fff';
   document.body.appendChild(hos);
+  const hasil = [];
   try{
-    for (let i = 0; i < hal.length; i++){
-      hos.innerHTML = `<div class="pf jana" style="width:${hal[i].lebar}mm;background:#fff">${hal[i].html}</div>`;
+    for (const h of hal){
+      hos.innerHTML = `<div class="pf jana" style="width:${h.lebar}mm;background:#fff">${h.html}</div>`;
       const kanvas = await window.html2canvas(hos.firstElementChild, {scale: 3, backgroundColor: '#ffffff', logging: false});
-      if (i) doc.addPage('a4', 'portrait');
-      doc.addImage(kanvas.toDataURL('image/jpeg', .95), 'JPEG', hal[i].x, hal[i].y, hal[i].lebar, hal[i].lebar * kanvas.height / kanvas.width, undefined, 'FAST');
+      hasil.push({src: kanvas.toDataURL('image/jpeg', .95), x: h.x, y: h.y, w: h.lebar, h: h.lebar * kanvas.height / kanvas.width});
     }
   } finally { hos.remove(); }
+  return hasil;
+}
+/* Pulangkan Blob PDF A4 (imej halaman yang sama). */
+async function janaPdfPermit(htmlPermit){
+  const hal = await janaHalamanPermit(htmlPermit);
+  const doc = new window.jspdf.jsPDF({unit: 'mm', format: 'a4', orientation: 'portrait', compress: true});
+  hal.forEach((h, i) => { if (i) doc.addPage('a4', 'portrait'); doc.addImage(h.src, 'JPEG', h.x, h.y, h.w, h.h, undefined, 'FAST'); });
   return doc.output('blob');
+}
+/* Komputer: cetak TERUS (tanpa muat turun). Imej halaman yang SAMA dengan PDF diletakkan dalam bekas cetakan, setiap satu
+   sebagai halaman A4 penuh dengan @page jidar 0 → pelayar tidak boleh mengubah susun atur (tiada skala/jidar/pengepala),
+   termasuk pelayar lama (cth. Chrome 109 Windows 7). cetakFn() membuka dialog cetak; sandaran() = cetakan lama jika gagal. */
+async function cetakImejPermit(htmlPermit, bekas, cetakFn, sandaran){
+  toast('Menyediakan permit untuk dicetak…');
+  let hal;
+  try { hal = await janaHalamanPermit(htmlPermit); }
+  catch(e){
+    return dialogPdf('Permit tidak dapat disediakan', 'Sebab: ' + String((e && e.message) || e).replace(/[<>&]/g, '') + '. Anda boleh cetak terus melalui pelayar (saiz mungkin berbeza sedikit).',
+      '🖨 Cetak terus', sandaran);
+  }
+  ffHalaman(false);
+  bekas.classList.remove('saf');
+  bekas.innerHTML = hal.map(h => `<div class="imej-hal"><img alt="" src="${h.src}" style="left:${h.x}mm;top:${h.y}mm;width:${h.w}mm;height:${h.h}mm"></div>`).join('');
+  let st = document.getElementById('imejPg');
+  if (!st){ st = document.createElement('style'); st.id = 'imejPg'; document.head.appendChild(st); }
+  st.textContent = '@page{size:A4 portrait;margin:0} .imej-hal{page:auto;position:relative;width:210mm;height:296mm;overflow:hidden;break-after:page;page-break-after:always}'
+    + ' .imej-hal:last-child{break-after:auto;page-break-after:auto} .imej-hal img{position:absolute;display:block;max-width:none;border:0}';
+  const buang = () => { const s = document.getElementById('imejPg'); if (s) s.remove(); };
+  window.addEventListener('afterprint', buang, {once: true});
+  await Promise.all([...bekas.querySelectorAll('img')].map(i => i.decode ? i.decode().catch(() => {}) : 0));
+  cetakFn();
 }
 /* Kongsi (iPhone: Print / Save to Files) → muat turun → buka tab baharu. Mesti dipanggil dalam sentuhan pengguna. */
 async function serahPdf(blob, nama){
   const fail = nama + '.pdf';
   try{
     const f = new File([blob], fail, {type: 'application/pdf'});
-    if (navigator.canShare && navigator.canShare({files: [f]})){ await navigator.share({files: [f], title: nama}); return; }
+    if (PERANTI_SENTUH && navigator.canShare && navigator.canShare({files: [f]})){ await navigator.share({files: [f], title: nama}); return; }   // komputer: terus muat turun
   }catch(e){ if (e && e.name === 'AbortError') return; }
   const url = URL.createObjectURL(blob);
   try{ const a = document.createElement('a'); a.href = url; a.download = fail; document.body.appendChild(a); a.click(); a.remove(); }
@@ -1880,13 +1914,13 @@ function dialogPdf(tajuk, mesej, butang, tindakan){
   });
   document.body.appendChild(d);
 }
-/* Telefon/tablet: jana PDF permit (reka bentuk komputer) dan tawarkan Simpan / Cetak. cetakTerus = sandaran jika PDF gagal. */
+/* Semua peranti: jana PDF permit (reka bentuk komputer) dan tawarkan Simpan / Cetak (telefon) atau Muat turun (komputer). cetakTerus = sandaran jika PDF gagal. */
 async function pdfPermitTelefon(htmlPermit, nama, cetakTerus){
   toast('Menyediakan PDF permit…');
   try{
     const blob = await janaPdfPermit(htmlPermit);
-    dialogPdf('📄 PDF permit', '',
-      'Simpan / Cetak PDF', () => serahPdf(blob, nama));
+    dialogPdf('📄 PDF permit', PERANTI_SENTUH ? '' : 'Buka fail PDF yang dimuat turun, kemudian cetak dengan saiz <b>Actual size / 100%</b> (bukan &quot;Fit&quot;) dan kertas <b>A4</b>.',
+      PERANTI_SENTUH ? 'Simpan / Cetak PDF' : '⬇ Muat turun PDF', () => serahPdf(blob, nama));
   }catch(e){
     dialogPdf('PDF tidak dapat dijana', 'Sebab: ' + String((e && e.message) || e).replace(/[<>&]/g, '') + '. Anda boleh cetak terus melalui pelayar (saiz mungkin berbeza sedikit).',
       '🖨 Cetak terus', cetakTerus);
@@ -1977,7 +2011,13 @@ function ffHalaman(on){
   /* Telefon/tablet: jana PDF A4 (reka bentuk komputer) — tidak bergantung pada saiz cetakan Safari */
   if (PERANTI_SENTUH && !DLM_BINGKAI){
     $('#printArea').classList.remove('saf');
-    return pdfPermitTelefon($('#printArea').innerHTML, namaFail, () => { $('#printArea').classList.toggle('saf', SAF); cetak(namaFail, a.ref); });
+    return pdfPermitTelefon($('#printArea').innerHTML, namaFail, () => { $('#printArea').classList.toggle('saf', SAF); ffHalaman(true); cetak(namaFail, a.ref); });
+  }
+  /* Komputer (permit): cetak TERUS imej halaman yang sama dengan PDF — tanpa muat turun (lihat cetakImejPermit) */
+  if (CETAK_GUNA_PDF && !salinan && !DLM_BINGKAI){
+    $('#printArea').classList.remove('saf');
+    return cetakImejPermit($('#printArea').innerHTML, $('#printArea'), () => cetak(namaFail, a.ref),
+      () => { $('#printArea').classList.toggle('saf', SAF); ffHalaman(true); cetak(namaFail, a.ref); });
   }
   cetak(namaFail, a.ref);
 }
