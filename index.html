@@ -402,6 +402,7 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 @media print{
   body{background:#fff}
   .app,.overlay,.drawer,.toast{display:none!important}
+  .poster-modal,#printHelp,div[role=dialog]{display:none!important}   /* poster notis / dialog TIDAK dicetak di atas permit */
   #printArea{display:block}
 }
 .pf{font-family:Arial,Helvetica,sans-serif;color:#000;font-size:10.5pt;line-height:1.35}
@@ -511,6 +512,10 @@ button,a,.opt label,input,select,textarea{-webkit-tap-highlight-color:transparen
 .pf:not(.saf) .p1 .sign td{text-align:center}
 .pf:not(.saf) .p1 .sign td:first-child{width:27mm!important}
 .pf:not(.saf) .p1 .foot{font-size:8pt;line-height:1.15;margin:9.6mm 0.8mm 0 -0.5mm;padding-top:2.6mm}
+/* Kod QR Borang 6 — penjuru kanan atas (sebaris kotak KERAJAAN NEGERI), 22mm. SAMA dalam kedua-dua sistem. */
+.pf .p1 .qr-permit{position:absolute;top:0;right:8.1mm;width:22mm;text-align:center;font:6pt/1.2 Arial,Helvetica,sans-serif;color:#000;z-index:2}
+.pf .p1 .qr-permit img{display:block;width:22mm;height:22mm;image-rendering:pixelated}
+.pf .p1 .qr-permit span{display:block;margin-top:.8mm}
 /* Safari (iPhone/iPad/Mac): Borang 6 dipadatkan (9pt) supaya kekal SATU halaman — SAMA dengan Sistem Pengurusan Permit.
    Saiz ini DITETAPKAN pengguna (20/11/2026). Jangan ubah. */
 /* Borang 6 & Lampiran A Safari: lihat blok 'iPhone/iPad (Safari) = SAMA dengan cetakan komputer' di bawah */
@@ -1821,7 +1826,23 @@ const PERANTI_SENTUH = /iP(hone|ad|od)|Android/i.test(navigator.userAgent) || (n
    saiz kertas, skala atau pemandu pencetak (pengguna minta 23/11/2026). Cetak terus pelayar = sandaran jika PDF gagal dijana. */
 const CETAK_GUNA_PDF = true;   // telefon: PDF (Simpan / Cetak); komputer: cetak terus imej halaman yang sama (cetakImejPermit)
 const PDF_LIB = ['https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
-                 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'];
+                 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+                 'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js'];
+/* Kod QR pada Borang 6 (penjuru kanan atas): imbas → Semak Status e-Permit (?ref=…) untuk mengesahkan permit.
+   Permit menyimpan tempat <div class="qr-permit" data-qr="…">; isiQR() melukis QR apabila pustaka qrcode sudah dimuatkan. */
+const QR_PAUTAN = 'https:\/\/kelantanecopark.github.io/e-permit/?ref=';
+const qrPermit = ref => `<div class="qr-permit" data-qr="${esc(QR_PAUTAN + encodeURIComponent(ref))}"></div>`;
+function isiQR(akar){
+  if (!akar || !window.qrcode) return [];
+  return [...akar.querySelectorAll('.qr-permit[data-qr]')].map(el => {
+    try {
+      const q = window.qrcode(0, 'M'); q.addData(el.dataset.qr); q.make();
+      el.innerHTML = `<img alt="Kod QR semak permit" src="${q.createDataURL(8, 0)}"><span>Imbas untuk semak status permit</span>`;
+      const img = el.querySelector('img');
+      return img.decode ? img.decode().catch(() => {}) : Promise.resolve();
+    } catch (e) { return Promise.resolve(); }
+  });
+}
 let pdfLibP = null;
 function muatPdfLib(){
   if (window.html2canvas && window.jspdf) return Promise.resolve();
@@ -1847,6 +1868,7 @@ async function janaHalamanPermit(htmlPermit){
   try{
     for (const h of hal){
       hos.innerHTML = `<div class="pf jana" style="width:${h.lebar}mm;background:#fff">${h.html}</div>`;
+      await Promise.all(isiQR(hos));                 // kod QR (Borang 6)
       const kanvas = await window.html2canvas(hos.firstElementChild, {scale: 3, backgroundColor: '#ffffff', logging: false});
       hasil.push({src: kanvas.toDataURL('image/jpeg', .95), x: h.x, y: h.y, w: h.lebar, h: h.lebar * kanvas.height / kanvas.width});
     }
@@ -1964,7 +1986,7 @@ function ffHalaman(on){
 
   $('#printArea').innerHTML = `
   <section class="page p1">
-    ${!approved?'<div class="watermark">'+WM+'</div>':''}
+    ${!approved?'<div class="watermark">'+WM+'</div>':''}${qrPermit(a.ref)}
     <table class="state"><tr><td style="width:50%">KERAJAAN NEGERI</td><td>KELANTAN</td></tr></table>
     <div class="t1">AKTA PERHUTANAN NEGARA 1984</div>
     <div class="t2">Borang 6</div>
@@ -2008,6 +2030,7 @@ function ffHalaman(on){
 ` + lampiranA(a, SAF, {approved, WM, lulus, o, pad, cell, tick});
   if(!approved && !isAdmin && !salinan) return toast('Permit hanya boleh dicetak selepas bayaran disahkan');
   const namaFail = (salinan ? 'Salinan-Permohonan-' : 'Permit-') + a.ref;
+  isiQR($('#printArea'));                         // cetakan pelayar (sandaran): lukis QR jika pustaka sudah ada
   /* Telefon/tablet: jana PDF A4 (reka bentuk komputer) — tidak bergantung pada saiz cetakan Safari */
   if (PERANTI_SENTUH && !DLM_BINGKAI){
     $('#printArea').classList.remove('saf');
