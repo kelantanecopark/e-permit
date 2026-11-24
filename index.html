@@ -1046,6 +1046,15 @@ function telOk(iso, raw){
     : (n.length >= 6 && n.length <= 15);
 }
 
+/* Jantina daripada No. MyKad (12 digit): digit TERAKHIR ganjil = Lelaki, genap = Wanita. Bukan MyKad (Passport dll.) → null */
+const jantinaDariIC = v => { const d = String(v || '').replace(/\D/g, ''); return d.length === 12 ? (+d[11] % 2 ? 'Lelaki' : 'Wanita') : null; };/* Baris MGP / peserta Warganegara: pilihan Jantina diisi automatik mengikut No. MyKad (pemohon masih boleh lihat; MyKad diutamakan) */
+function selarasJantina(tr){
+  const s = $('[data-k="jantina"]', tr), ic = $('[data-k="ic"]', tr), wn = $('[data-k="wn"]', tr);
+  if (!s || !ic || (wn && wn.value !== 'Warganegara')) { if (s) s.title = ''; return; }
+  const j = jantinaDariIC(ic.value);
+  if (j && s.value !== j) s.value = j;
+  s.title = j ? 'Ditentukan automatik daripada No. MyKad (digit terakhir ganjil = Lelaki, genap = Wanita)' : '';
+}
 function addRow(tbl, cols, extra){
   const tb = $('tbody', tbl), tr = document.createElement('tr');
   tr.innerHTML = `<td class="bil"></td>` + cols.map(([k,p])=>`<td><input class="input" data-k="${k}" placeholder="${p}" autocomplete="off"></td>`).join('')
@@ -1071,6 +1080,7 @@ function addRow(tbl, cols, extra){
       // ada huruf = Passport ditaip sebelum memilih "Bukan Warganegara": jangan buang hurufnya (semakan akan memaklumkan)
       const v = mk && !/[a-z]/i.test(ic.value) ? fmtIC(ic.value) : ic.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (v !== ic.value) ic.value = v; };
     ic.addEventListener('input', mod); wn.addEventListener('change', () => { mod(); if (ic.value) semakIcPeserta(tr); }); mod(); }
+  tr.addEventListener('input', () => selarasJantina(tr)); tr.addEventListener('change', e => { if (e.target.dataset.k !== 'jantina') selarasJantina(tr); });
   tr.addEventListener('input', recount); tr.addEventListener('change', recount);
   tb.appendChild(tr); renumber();
   return tr;
@@ -1133,6 +1143,7 @@ function syncMgpSama(clear){
     else if (clear) i.value = '';
     i.readOnly = on;
   });
+  selarasJantina(tr);                              // MyKad pemohon → jantina MGP 1
   recount();
 }
 $('#mgpSama').addEventListener('change', ()=>syncMgpSama(true));
@@ -1396,6 +1407,7 @@ form.onsubmit = async e => {
   if(!bad && em && !EMEL_RE.test(em)){ bad = form.emel; msg = 'Format emel tidak sah (cth. nama@contoh.com)'; }
   if(bad){ bad.focus(); bad.scrollIntoView({block:'center',behavior:'smooth'}); return toast(msg); }
   if(form.hingga.value < form.dari.value){ form.hingga.classList.add('invalid'); form.hingga.focus(); return toast('Tarikh hingga mesti selepas tarikh sah dari'); }
+  $$('#tblMgp tbody tr, #tblPes tbody tr').forEach(selarasJantina);   // jantina = MyKad (digit terakhir) sebelum dihantar
   const mgpList = readRows('#tblMgp'), peserta = readRows('#tblPes');
   if(!mgpList.length) return toast('Sila masukkan sekurang-kurangnya seorang MGP');
   if(peserta.length > mgpList.length * NISBAH){ ratioAlert(); return toast(`Nisbah 1 MGP : ${NISBAH} peserta — ${peserta.length} peserta memerlukan sekurang-kurangnya ${Math.ceil(peserta.length/NISBAH)} MGP`); }
